@@ -110,7 +110,12 @@ export function ChartContainer() {
       },
       crosshair: { mode: CrosshairMode.Normal },
       rightPriceScale: { borderColor: '#2a2a45' },
-      timeScale: { borderColor: '#2a2a45', timeVisible: true },
+      timeScale: {
+        borderColor: '#2a2a45',
+        timeVisible: true,
+        fixLeftEdge: true,   // 데이터 시작 이전으로 스크롤 방지
+        fixRightEdge: true,  // 데이터 끝 이후로 스크롤 방지 → RSI/MACD 선 연장 현상 해소
+      },
       width: containerRef.current.clientWidth,
       height: CHART_HEIGHT,
     })
