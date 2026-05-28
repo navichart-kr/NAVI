@@ -400,9 +400,21 @@ export function SimulateChart({ pastData, futureData, onRetry }: Props) {
 
   /* ══ RSI 서브차트 ════════════════════════════════════════════ */
   useEffect(() => {
-    if (!rsiDiv.current) return
     const data = revealed ? [...pastData, ...futureData] : pastData
-    if (!activeInds.has('rsi')) { rsiChart.current?.remove(); rsiChart.current = null; rsiSeries.current = null; return }
+
+    // ① 반드시 cleanup 먼저 — rsiDiv.current 체크보다 앞에 와야 함
+    //    RSI를 끄면 React가 rsiDiv DOM을 제거 → rsiDiv.current = null이 된 후 effect 실행
+    //    이때 "if (!rsiDiv.current) return"이 먼저 오면 cleanup이 건너뛰어져
+    //    rsiChart.current에 구(stale) 인스턴스가 남음 → 재활성화 시 아무것도 안 보이는 버그
+    if (!activeInds.has('rsi')) {
+      if (rsiChart.current) { try { rsiChart.current.remove() } catch {} }
+      rsiChart.current = null; rsiSeries.current = null
+      return
+    }
+
+    // ② RSI 활성 상태인데 div가 아직 DOM에 없으면 대기
+    if (!rsiDiv.current) return
+
     if (!rsiChart.current) {
       rsiChart.current = createChart(rsiDiv.current, {
         layout: { background: { type: ColorType.Solid, color: '#1a1a2e' }, textColor: '#94a3b8' },
@@ -448,9 +460,18 @@ export function SimulateChart({ pastData, futureData, onRetry }: Props) {
 
   /* ══ MACD 서브차트 ═══════════════════════════════════════════ */
   useEffect(() => {
-    if (!macdDiv.current) return
     const data = revealed ? [...pastData, ...futureData] : pastData
-    if (!activeInds.has('macd')) { macdChart.current?.remove(); macdChart.current = null; macdSeries.current = null; return }
+
+    // ① cleanup 먼저 (RSI와 동일한 이유 — stale ref 방지)
+    if (!activeInds.has('macd')) {
+      if (macdChart.current) { try { macdChart.current.remove() } catch {} }
+      macdChart.current = null; macdSeries.current = null
+      return
+    }
+
+    // ② MACD 활성 상태인데 div가 아직 DOM에 없으면 대기
+    if (!macdDiv.current) return
+
     if (!macdChart.current) {
       macdChart.current = createChart(macdDiv.current, {
         layout: { background: { type: ColorType.Solid, color: '#1a1a2e' }, textColor: '#94a3b8' },
