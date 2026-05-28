@@ -185,7 +185,7 @@ export function SimulateChart({ pastData, futureData, onRetry }: Props) {
   const chartRef    = useRef<IChartApi | null>(null)
   const candleRef   = useRef<ISeriesApi<'Candlestick'> | null>(null)
   const bbRef       = useRef<{ upper: LineS; middle: LineS; lower: LineS } | null>(null)
-  const maRef       = useRef<{ ma20: LineS; ma60: LineS } | null>(null)
+  const maRef       = useRef<{ ma5: LineS; ma20: LineS; ma60: LineS; ma120: LineS } | null>(null)
   const rsiChart    = useRef<IChartApi | null>(null)
   const rsiSeries   = useRef<{ line: LineS; ob: LineS; os: LineS } | null>(null)
   const macdChart   = useRef<IChartApi | null>(null)
@@ -291,7 +291,7 @@ export function SimulateChart({ pastData, futureData, onRetry }: Props) {
       grid:   { vertLines: { color: '#2a2a45' }, horzLines: { color: '#2a2a45' } },
       crosshair: { mode: CrosshairMode.Normal },
       rightPriceScale: { borderColor: '#2a2a45' },
-      timeScale: { borderColor: '#2a2a45', timeVisible: true },
+      timeScale: { borderColor: '#2a2a45', timeVisible: true, fixLeftEdge: true, fixRightEdge: true },
       width: mainRef.current.clientWidth, height: MAIN_H,
     })
     const series = chart.addCandlestickSeries({
@@ -357,18 +357,28 @@ export function SimulateChart({ pastData, futureData, onRetry }: Props) {
     }
     // MA
     if (activeInds.has('moving-average')) {
-      const ma20 = calcMA(data, 20), ma60 = calcMA(data, 60)
+      const ma5   = calcMA(data,   5)
+      const ma20  = calcMA(data,  20)
+      const ma60  = calcMA(data,  60)
+      const ma120 = calcMA(data, 120)
       if (!maRef.current) {
+        const mkMA = (color: string) => chart.addLineSeries({ color, lineWidth: 1, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false })
         maRef.current = {
-          ma20: chart.addLineSeries({ color: '#f59e0b', lineWidth: 1, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false }),
-          ma60: chart.addLineSeries({ color: '#a78bfa', lineWidth: 1, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false }),
+          ma5:   mkMA('#facc15'),  // 노랑 — 단기
+          ma20:  mkMA('#f97316'),  // 주황 — 단기~중기
+          ma60:  mkMA('#a78bfa'),  // 보라 — 중기
+          ma120: mkMA('#f43f5e'),  // 빨강 — 장기
         }
       }
-      maRef.current.ma20.setData(ma20 as any)
-      maRef.current.ma60.setData(ma60 as any)
+      maRef.current.ma5.setData(ma5     as any)
+      maRef.current.ma20.setData(ma20   as any)
+      maRef.current.ma60.setData(ma60   as any)
+      maRef.current.ma120.setData(ma120 as any)
     } else if (maRef.current) {
+      chart.removeSeries(maRef.current.ma5)
       chart.removeSeries(maRef.current.ma20)
       chart.removeSeries(maRef.current.ma60)
+      chart.removeSeries(maRef.current.ma120)
       maRef.current = null
     }
     redrawCanvas()
@@ -385,7 +395,7 @@ export function SimulateChart({ pastData, futureData, onRetry }: Props) {
         grid:   { vertLines: { color: '#2a2a45' }, horzLines: { color: '#2a2a45' } },
         crosshair: { mode: CrosshairMode.Normal },
         rightPriceScale: { borderColor: '#2a2a45', scaleMargins: { top: 0.1, bottom: 0.1 } },
-        timeScale: { borderColor: '#2a2a45', timeVisible: true },
+        timeScale: { visible: false },
         handleScroll: false, handleScale: false,
         width: rsiDiv.current.clientWidth, height: SUB_H,
       })
@@ -407,8 +417,11 @@ export function SimulateChart({ pastData, futureData, onRetry }: Props) {
       rsiSeries.current.os.setData([{ time: f, value: 30 }, { time: l, value: 30 }] as any)
     }
     rc.timeScale().fitContent()
-    const mainRange = chartRef.current?.timeScale().getVisibleLogicalRange()
-    if (mainRange) rc.timeScale().setVisibleLogicalRange(mainRange)
+    // RAF 로 fitContent 렌더 패스 완료 후 메인 차트 범위 동기화
+    requestAnimationFrame(() => {
+      const mainRange = chartRef.current?.timeScale().getVisibleLogicalRange()
+      if (mainRange) rc.timeScale().setVisibleLogicalRange(mainRange)
+    })
   }, [activeInds, revealed, pastData, futureData])
 
   /* ══ MACD 서브차트 ═══════════════════════════════════════════ */
@@ -422,7 +435,7 @@ export function SimulateChart({ pastData, futureData, onRetry }: Props) {
         grid:   { vertLines: { color: '#2a2a45' }, horzLines: { color: '#2a2a45' } },
         crosshair: { mode: CrosshairMode.Normal },
         rightPriceScale: { borderColor: '#2a2a45', scaleMargins: { top: 0.15, bottom: 0.15 } },
-        timeScale: { borderColor: '#2a2a45', timeVisible: true },
+        timeScale: { visible: false },
         handleScroll: false, handleScale: false,
         width: macdDiv.current.clientWidth, height: SUB_H,
       })
@@ -441,8 +454,11 @@ export function SimulateChart({ pastData, futureData, onRetry }: Props) {
     macdSeries.current.line.setData(md.map(d => ({ time: d.time, value: d.macd })) as any)
     macdSeries.current.signal.setData(md.filter(d => d.signal !== null).map(d => ({ time: d.time, value: d.signal! })) as any)
     mc.timeScale().fitContent()
-    const mainRange = chartRef.current?.timeScale().getVisibleLogicalRange()
-    if (mainRange) mc.timeScale().setVisibleLogicalRange(mainRange)
+    // RAF 로 fitContent 렌더 패스 완료 후 메인 차트 범위 동기화
+    requestAnimationFrame(() => {
+      const mainRange = chartRef.current?.timeScale().getVisibleLogicalRange()
+      if (mainRange) mc.timeScale().setVisibleLogicalRange(mainRange)
+    })
   }, [activeInds, revealed, pastData, futureData])
 
   /* ══ 고무줄 프리뷰 ═══════════════════════════════════════════ */
