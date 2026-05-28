@@ -35,7 +35,7 @@ export function ChartContainer() {
   const candleRef    = useRef<ISeriesApi<'Candlestick'> | null>(null)
 
   const bbRef = useRef<{ upper: LineSeries; middle: LineSeries; lower: LineSeries } | null>(null)
-  const maRef = useRef<{ ma20: LineSeries; ma60: LineSeries } | null>(null)
+  const maRef = useRef<{ ma5: LineSeries; ma20: LineSeries; ma60: LineSeries; ma120: LineSeries } | null>(null)
 
   const drawnLinesRef   = useRef<LineSeries[]>([])
   const pendingPointRef = useRef<{ time: Time; price: number } | null>(null)
@@ -187,21 +187,31 @@ export function ChartContainer() {
       bbRef.current = null
     }
 
-    // 이동평균선
+    // 이동평균선 (MA5 · MA20 · MA60 · MA120)
     if (activeIndicators.has('moving-average')) {
-      const ma20d = calcMA(candleData, 20)
-      const ma60d = calcMA(candleData, 60)
+      const ma5d   = calcMA(candleData, 5)
+      const ma20d  = calcMA(candleData, 20)
+      const ma60d  = calcMA(candleData, 60)
+      const ma120d = calcMA(candleData, 120)
       if (!maRef.current) {
+        const mkMA = (color: string) =>
+          chart.addLineSeries({ color, lineWidth: 1, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false })
         maRef.current = {
-          ma20: chart.addLineSeries({ color: '#f59e0b', lineWidth: 1, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false }),
-          ma60: chart.addLineSeries({ color: '#a78bfa', lineWidth: 1, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false }),
+          ma5:   mkMA('#facc15'),  // 노랑  — 단기
+          ma20:  mkMA('#f97316'),  // 주황  — 단기~중기
+          ma60:  mkMA('#a78bfa'),  // 보라  — 중기
+          ma120: mkMA('#f43f5e'),  // 빨강  — 장기
         }
       }
-      maRef.current.ma20.setData(ma20d as any)
-      maRef.current.ma60.setData(ma60d as any)
+      maRef.current.ma5.setData(ma5d     as any)
+      maRef.current.ma20.setData(ma20d   as any)
+      maRef.current.ma60.setData(ma60d   as any)
+      maRef.current.ma120.setData(ma120d as any)
     } else if (maRef.current) {
+      chart.removeSeries(maRef.current.ma5)
       chart.removeSeries(maRef.current.ma20)
       chart.removeSeries(maRef.current.ma60)
+      chart.removeSeries(maRef.current.ma120)
       maRef.current = null
     }
   }, [candleData, activeIndicators])
