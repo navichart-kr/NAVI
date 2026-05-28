@@ -153,8 +153,14 @@ export function ChartContainer() {
     const isNewData = candleData !== prevCandleRef.current
     prevCandleRef.current = candleData
 
-    candle.setData(candleData as any)
-    if (isNewData) chart.timeScale().fitContent()
+    // 데이터가 실제로 바뀔 때만 setData 호출.
+    // 지표 토글 시에는 activeIndicators만 변하므로 candleData 참조는 동일 →
+    // setData를 불필요하게 호출하면 lightweight-charts가 렌더링 파이프라인을
+    // 리셋하면서 removeSeries와 타이밍 충돌 → 캔들 차트가 순간 사라지는 버그.
+    if (isNewData) {
+      candle.setData(candleData as any)
+      chart.timeScale().fitContent()
+    }
 
     // 볼린저 밴드
     if (activeIndicators.has('bollinger')) {

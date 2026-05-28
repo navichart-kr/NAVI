@@ -6,12 +6,7 @@ import { useChartStore } from '@/stores/chartStore'
 import { calcRSI } from '@/lib/indicators'
 import { chartSync } from '@/lib/chartSync'
 
-interface Props {
-  /** true: MACD도 함께 표시 중 → 타임 스케일 숨김 (중복 방지) */
-  hideTimeScale?: boolean
-}
-
-export function RSIChart({ hideTimeScale = false }: Props) {
+export function RSIChart() {
   const containerRef = useRef<HTMLDivElement>(null)
   const { candleData } = useChartStore()
 
@@ -34,13 +29,12 @@ export function RSIChart({ hideTimeScale = false }: Props) {
       },
       timeScale: {
         borderColor: '#2a2a45',
-        timeVisible: !hideTimeScale,
-        visible: !hideTimeScale,
+        visible: false,   // 메인 차트에 날짜가 있으므로 서브 차트는 숨김
       },
       handleScroll: false,
       handleScale: false,
       width: containerRef.current.clientWidth,
-      height: hideTimeScale ? 110 : 130,
+      height: 100,
     })
 
     const rsiData = calcRSI(candleData)
@@ -84,7 +78,7 @@ export function RSIChart({ hideTimeScale = false }: Props) {
       unsub()
       chart.remove()
     }
-  }, [candleData, hideTimeScale])
+  }, [candleData])
 
   return (
     <div className="mt-1">

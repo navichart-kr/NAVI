@@ -29,12 +29,12 @@ export function MACDChart() {
       },
       timeScale: {
         borderColor: '#2a2a45',
-        timeVisible: true,  // MACD는 항상 맨 아래 → 시간 축 표시
+        visible: false,   // 메인 차트에 날짜가 있으므로 서브 차트는 숨김
       },
       handleScroll: false,
       handleScale: false,
       width: containerRef.current.clientWidth,
-      height: 130,
+      height: 100,
     })
 
     const macdData = calcMACD(candleData)
