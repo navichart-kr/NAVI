@@ -114,7 +114,7 @@ export function TutorialStep() {
     setShowPanel(false); setHl(null)
 
     const curMode = getMode(currentStep, false)
-    const curPh   = PANEL_H[curMode]
+    const curPh   = PANEL_H
 
     smartScroll(currentStep, PANEL_H)
 
