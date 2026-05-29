@@ -422,49 +422,60 @@ export function TutorialStep() {
 
         {/* ── 하단 와이드 패널 (모든 모드 공통) ── */}
         {showPanel && (
-          <motion.div
-            key={`panel-${currentStep.id}-${mode}`}
-            initial={{ y: 48, opacity: 0 }}
-            animate={{ y: 0,  opacity: 1 }}
-            exit={{   y: 48, opacity: 0 }}
-            transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
+          /* 고정 위치 래퍼: framer-motion transform 과 충돌 없이 중앙 정렬 */
+          <div
             style={{
-              position:      'fixed',
-              bottom:         0,
-              left:          '50%',
-              transform:     'translateX(-50%)',
-              width:         'calc(100% - 32px)',
-              maxWidth:       860,
-              maxHeight:      mode === 'mini' ? 'auto' : `${ph}px`,
-              zIndex:         50,
-              display:       'flex',
-              flexDirection: 'column',
+              position: 'fixed',
+              bottom:    0,
+              left:      0,
+              right:     0,
+              zIndex:    50,
+              display:  'flex',
+              justifyContent: 'center',
+              padding:  '0 16px',
+              pointerEvents: 'none',
             }}
-            className="bg-white rounded-t-3xl shadow-[0_-8px_48px_rgba(0,0,0,0.18)] overflow-hidden"
           >
-            {/* 드래그 핸들 */}
-            <div className="flex justify-center pt-2.5 flex-shrink-0">
-              <div className="w-9 h-1 bg-gray-200 rounded-full" />
-            </div>
+            <motion.div
+              key={`panel-${currentStep.id}-${mode}`}
+              initial={{ y: 48, opacity: 0 }}
+              animate={{ y: 0,  opacity: 1 }}
+              exit={{   y: 48, opacity: 0 }}
+              transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
+              style={{
+                width:         '100%',
+                maxWidth:       860,
+                maxHeight:      mode === 'mini' ? 'auto' : `${ph}px`,
+                display:       'flex',
+                flexDirection: 'column',
+                pointerEvents: 'auto',
+              }}
+              className="bg-white rounded-t-3xl shadow-[0_-8px_48px_rgba(0,0,0,0.18)] overflow-hidden"
+            >
+              {/* 드래그 핸들 */}
+              <div className="flex justify-center pt-2.5 flex-shrink-0">
+                <div className="w-9 h-1 bg-gray-200 rounded-full" />
+              </div>
 
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={mode}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.12 }}
-                className="flex flex-col overflow-hidden flex-1"
-              >
-                {mode === 'mini'     && <MiniContent />}
-                {mode === 'judgment' && <JudgmentContent />}
-                {mode === 'reading'  && <ReadingContent />}
-                {mode === 'feedback' && <FeedbackContent />}
-              </motion.div>
-            </AnimatePresence>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={mode}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.12 }}
+                  className="flex flex-col overflow-hidden flex-1"
+                >
+                  {mode === 'mini'     && <MiniContent />}
+                  {mode === 'judgment' && <JudgmentContent />}
+                  {mode === 'reading'  && <ReadingContent />}
+                  {mode === 'feedback' && <FeedbackContent />}
+                </motion.div>
+              </AnimatePresence>
 
-            <Nav />
-          </motion.div>
+              <Nav />
+            </motion.div>
+          </div>
         )}
       </>
     </AnimatePresence>
