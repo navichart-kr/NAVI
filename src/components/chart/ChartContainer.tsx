@@ -39,6 +39,8 @@ export function ChartContainer() {
 
   const drawnLinesRef   = useRef<LineSeries[]>([])
   const pendingPointRef = useRef<{ time: Time; price: number } | null>(null)
+  // 피보나치 캔버스 레이블 (오른쪽 lastValueVisible 대체 — 왼쪽에 직접 그리기)
+  const fibLevelsRef    = useRef<{ value: number; label: string; color: string }[]>([])
 
   // ── 최신값을 ref에 동기화 (stale closure 방지) ────────
   const drawingToolRef  = useRef(useChartStore.getState().drawingTool)
@@ -71,10 +73,44 @@ export function ChartContainer() {
     return () => window.removeEventListener('resize', syncCanvas)
   }, [syncCanvas])
 
+  // 피보나치 레이블 캔버스 왼쪽에 그리기 (refs 직접 접근 → stale 없음)
+  const drawFibLabels = useCallback((ctx: CanvasRenderingContext2D) => {
+    const series = candleRef.current
+    const levels = fibLevelsRef.current
+    if (levels.length === 0 || !series) return
+    ctx.save()
+    ctx.font = 'bold 9px system-ui, sans-serif'
+    levels.forEach(({ value, label, color }) => {
+      const y = series.priceToCoordinate(value)
+      if (y === null || y < 2 || y > CHART_HEIGHT - 2) return
+      const tw = ctx.measureText(label).width
+      const bw = tw + 8, bh = 14
+      const bx = 6, by = y - bh / 2
+      ctx.fillStyle = color + 'dd'
+      ctx.beginPath()
+      if (typeof (ctx as any).roundRect === 'function') {
+        ;(ctx as any).roundRect(bx, by, bw, bh, 3)
+      } else {
+        ctx.rect(bx, by, bw, bh)
+      }
+      ctx.fill()
+      ctx.fillStyle = '#fff'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(label, bx + bw / 2, y)
+    })
+    ctx.restore()
+  }, [])
+
+  // clearCanvas: 지우고 피보나치 레이블 다시 그리기
   const clearCanvas = useCallback(() => {
     const c = canvasRef.current
-    c?.getContext('2d')?.clearRect(0, 0, c.width, c.height)
-  }, [])
+    if (!c) return
+    const ctx = c.getContext('2d')
+    if (!ctx) return
+    ctx.clearRect(0, 0, c.width, c.height)
+    drawFibLabels(ctx)
+  }, [drawFibLabels])
 
   // ── 점 그리기 헬퍼 ────────────────────────────────────
   const drawDot = useCallback((
@@ -131,6 +167,40 @@ export function ChartContainer() {
 
     // 메인 차트를 chartSync에 등록 → RSI/MACD 서브 차트에 범위 전파
     chartSync.register(chart)
+
+    // 스크롤/줌 시 피보나치 캔버스 레이블 위치 갱신
+    chart.timeScale().subscribeVisibleTimeRangeChange(() => {
+      const canvas = canvasRef.current
+      if (!canvas || fibLevelsRef.current.length === 0) return
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      const series = candleRef.current
+      const levels = fibLevelsRef.current
+      if (!series) return
+      ctx.save()
+      ctx.font = 'bold 9px system-ui, sans-serif'
+      levels.forEach(({ value, label, color }) => {
+        const y = series.priceToCoordinate(value)
+        if (y === null || y < 2 || y > CHART_HEIGHT - 2) return
+        const tw = ctx.measureText(label).width
+        const bw = tw + 8, bh = 14
+        const bx = 6, by = y - bh / 2
+        ctx.fillStyle = color + 'dd'
+        ctx.beginPath()
+        if (typeof (ctx as any).roundRect === 'function') {
+          ;(ctx as any).roundRect(bx, by, bw, bh, 3)
+        } else {
+          ctx.rect(bx, by, bw, bh)
+        }
+        ctx.fill()
+        ctx.fillStyle = '#fff'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(label, bx + bw / 2, y)
+      })
+      ctx.restore()
+    })
 
     const onResize = () => {
       if (containerRef.current) {
@@ -234,6 +304,7 @@ export function ChartContainer() {
       if (!ctx) return
 
       ctx.clearRect(0, 0, canvas.width, canvas.height)
+      drawFibLabels(ctx)  // rubber-band 아래 피보나치 레이블 유지
 
       const pending = pendingPointRef.current
       if (!pending || !params.point) return
@@ -273,7 +344,7 @@ export function ChartContainer() {
       chart.unsubscribeCrosshairMove(onMove)
       clearCanvas()
     }
-  }, [drawingTool, clearCanvas, drawDot])
+  }, [drawingTool, clearCanvas, drawDot, drawFibLabels])
 
   // ── 클릭 핸들러 (ref 기반 → stale closure 없음) ──────
   // drawingTool / candleData 를 ref 로 읽기 때문에
@@ -344,19 +415,20 @@ export function ChartContainer() {
         const t1 = (data.length > 0 ? data[data.length - 1].time : time) as Time
 
         FIB_LEVELS.forEach(({ ratio, label, color }) => {
+          const value = priceHigh - range * ratio
           const s = chart.addLineSeries({
             color, lineWidth: 1, lineStyle: 2,
-            title: label,
-            lastValueVisible: true, priceLineVisible: false,
+            lastValueVisible: false, priceLineVisible: false,  // 오른쪽 레이블 제거
           })
           s.setData([
-            { time: t0, value: priceHigh - range * ratio },
-            { time: t1, value: priceHigh - range * ratio },
+            { time: t0, value },
+            { time: t1, value },
           ] as any)
           drawnLinesRef.current.push(s)
+          fibLevelsRef.current.push({ value, label, color })  // 캔버스 왼쪽 레이블용
         })
 
-        clearCanvas()
+        clearCanvas()  // clearCanvas가 피보나치 레이블도 다시 그림
         setDrawingStep(0)
         setDrawingTool('none')
       }
@@ -374,6 +446,7 @@ export function ChartContainer() {
       drawnLinesRef.current.forEach(s => { try { chart.removeSeries(s) } catch {} })
       drawnLinesRef.current = []
       pendingPointRef.current = null
+      fibLevelsRef.current = []   // 피보나치 캔버스 레이블도 초기화
       clearCanvas()
       setDrawingStep(0)
       setDrawingTool('none')
