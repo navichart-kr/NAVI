@@ -9,33 +9,31 @@ import { useChartStore }    from '@/stores/chartStore'
 import type { TutorialStep as TStep } from '@/types'
 
 /* ─── 상수 ────────────────────────────────────────────────── */
-const GAP       = 12
-const MARGIN    = 12
 const PAD       = 6
-const NAV_H     = 68
-const SCROLL_MS = 400
+const SCROLL_MS = 350
 
-/* ─── 타입 ────────────────────────────────────────────────── */
-interface PopupPos {
-  top: number; left: number; width: number
-  maxH: number; dir: 'top' | 'bottom' | 'left' | 'right'
-  arrowX: number; arrowY: number
-}
+/* ─── 하이라이트 링 위치 타입 ─────────────────────────────── */
 interface HighlightRect {
   top: number; left: number; width: number; height: number
 }
 
-function popupWidth() { return Math.min(440, window.innerWidth - MARGIN * 2) }
+/* ─── 대상 요소가 뷰포트 안에 있는지 확인 ─────────────────── */
+function isInViewport(rect: DOMRect): boolean {
+  return rect.bottom > 0 && rect.top < window.innerHeight &&
+         rect.right > 0  && rect.left < window.innerWidth
+}
 
-function estimateH(step: TStep): number {
-  let h = 28 + 44 + (step.tips?.length ?? 0) * 26 + NAV_H + 32
-  // 판단 UI: 3개 선택지 × 44px + 질문 높이
-  if (step.actionRequired === 'judgment') h += 44 + 3 * 44
-  // 캔들 OHLC 카드
-  if (step.actionRequired === 'candle-click') h += 80
-  // 완료 메시지
-  if (step.completionMessage) h += 52
-  return h
+function calcHighlight(step: TStep): HighlightRect | null {
+  const el = document.querySelector(step.targetSelector)
+  if (!el) return null
+  const rect = el.getBoundingClientRect()
+  if (!isInViewport(rect)) return null
+  return {
+    top:    rect.top    - PAD,
+    left:   rect.left   - PAD,
+    width:  rect.width  + PAD * 2,
+    height: rect.height + PAD * 2,
+  }
 }
 
 function scrollToTarget(step: TStep): boolean {
@@ -43,57 +41,10 @@ function scrollToTarget(step: TStep): boolean {
   if (!el) return false
   const vh   = window.innerHeight
   const rect = el.getBoundingClientRect()
-  let targetScrollY: number
-  if (step.position === 'bottom')      targetScrollY = window.scrollY + rect.top    - vh * 0.18
-  else if (step.position === 'top')    targetScrollY = window.scrollY + rect.bottom - vh * 0.78
-  else                                 targetScrollY = window.scrollY + rect.top + rect.height / 2 - vh * 0.45
+  // 패널이 화면 하단 40%를 차지하므로 대상이 상단 55% 안에 들어오도록 스크롤
+  const targetScrollY = window.scrollY + rect.top - vh * 0.25
   window.scrollTo({ top: Math.max(0, targetScrollY), behavior: 'smooth' })
   return true
-}
-
-function calcPos(step: TStep): { pos: PopupPos; highlight: HighlightRect | null } {
-  const el   = document.querySelector(step.targetSelector)
-  const vh   = window.innerHeight
-  const vw   = window.innerWidth
-  const w    = popupWidth()
-  const estH = estimateH(step)
-
-  if (!el) {
-    const top = Math.max(MARGIN, (vh - estH) / 2)
-    return { pos: { top, left: (vw - w) / 2, width: w, maxH: vh - top - MARGIN, dir: 'bottom', arrowX: w / 2, arrowY: 0 }, highlight: null }
-  }
-
-  const rect = el.getBoundingClientRect()
-  const highlight: HighlightRect = { top: rect.top - PAD, left: rect.left - PAD, width: rect.width + PAD * 2, height: rect.height + PAD * 2 }
-
-  const spaceBottom = vh - rect.bottom - GAP
-  const spaceTop    = rect.top  - GAP
-  const spaceRight  = vw - rect.right - GAP
-  const spaceLeft   = rect.left - GAP
-
-  let dir = step.position
-  if (dir === 'bottom' && spaceBottom < estH  && spaceTop    > spaceBottom) dir = 'top'
-  if (dir === 'top'    && spaceTop    < estH  && spaceBottom > spaceTop)    dir = 'bottom'
-  if (dir === 'right'  && spaceRight  < w     && spaceLeft   > spaceRight)  dir = 'left'
-  if (dir === 'left'   && spaceLeft   < w     && spaceRight  > spaceLeft)   dir = 'right'
-  if ((dir === 'left'  || dir === 'right') && w > vw * 0.55) dir = spaceBottom >= spaceTop ? 'bottom' : 'top'
-
-  let rawTop: number, rawLeft: number
-  if      (dir === 'bottom') { rawTop = rect.bottom + GAP;                      rawLeft = rect.left + rect.width / 2 - w / 2 }
-  else if (dir === 'top')    { rawTop = rect.top - estH - GAP;                  rawLeft = rect.left + rect.width / 2 - w / 2 }
-  else if (dir === 'right')  { rawTop = rect.top + rect.height / 2 - estH / 2;  rawLeft = rect.right + GAP }
-  else                       { rawTop = rect.top + rect.height / 2 - estH / 2;  rawLeft = rect.left - w - GAP }
-
-  const cLeft = Math.max(MARGIN, Math.min(rawLeft, vw - w - MARGIN))
-  const cTop  = Math.max(MARGIN, Math.min(rawTop,  vh - NAV_H - MARGIN))
-  const maxH  = Math.max(NAV_H + 120, vh - cTop - MARGIN)
-
-  const arrowX = (dir === 'bottom' || dir === 'top')
-    ? Math.max(16, Math.min(rect.left + rect.width  / 2 - cLeft, w    - 16)) : 0
-  const arrowY = (dir === 'left'   || dir === 'right')
-    ? Math.max(16, Math.min(rect.top  + rect.height / 2 - cTop,  estH - 16)) : 0
-
-  return { pos: { top: cTop, left: cLeft, width: w, maxH, dir, arrowX, arrowY }, highlight }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -108,8 +59,10 @@ export function TutorialStep() {
 
   const { activeIndicators } = useChartStore()
 
-  const [pos, setPos] = useState<PopupPos | null>(null)
-  const [hl,  setHl]  = useState<HighlightRect | null>(null)
+  const [hl,          setHl]          = useState<HighlightRect | null>(null)
+  const [showPanel,   setShowPanel]   = useState(false)
+  // 액션이 필요한 단계 중 미완료 상태에서는 패널을 접어둠 (차트/버튼 클릭 방해 최소화)
+  const [minimized,   setMinimized]   = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   /* ── indicator-toggle 감지 ─────────────────────────────── */
@@ -124,38 +77,52 @@ export function TutorialStep() {
     }
   }, [activeIndicators, currentStep, stepDone, markStepDone])
 
-  /* ── 위치 재계산 ────────────────────────────────────────── */
+  /* ── 하이라이트 링 재계산 (스크롤·리사이즈 시) ────────────── */
   const recompute = useCallback(() => {
-    if (!currentStep) { setPos(null); setHl(null); return }
-    const { pos, highlight } = calcPos(currentStep)
-    setPos(pos); setHl(highlight)
+    if (!currentStep) { setHl(null); return }
+    setHl(calcHighlight(currentStep))
   }, [currentStep])
 
-  /* ── 단계 변경 → 스크롤 → 위치 계산 ─────────────────────── */
+  /* ── 단계 변경 ────────────────────────────────────────────── */
   useEffect(() => {
-    if (!currentStep) { setPos(null); setHl(null); return }
+    if (!currentStep) { setHl(null); setShowPanel(false); return }
     if (timerRef.current) clearTimeout(timerRef.current)
-    setPos(null); setHl(null)
+    setShowPanel(false); setHl(null)
+
+    // 액션 대기 단계는 접힌 상태로 시작 (완료 시 자동 펼침)
+    const needsAction =
+      currentStep.actionRequired === 'candle-click' ||
+      currentStep.actionRequired === 'indicator-toggle'
+    setMinimized(needsAction)
+
     const hasEl = scrollToTarget(currentStep)
     timerRef.current = setTimeout(() => {
-      const { pos, highlight } = calcPos(currentStep)
-      setPos(pos); setHl(highlight)
-    }, hasEl ? SCROLL_MS : 0)
+      recompute()
+      setShowPanel(true)
+    }, hasEl ? SCROLL_MS : 80)
     return () => { if (timerRef.current) clearTimeout(timerRef.current) }
   }, [currentStep]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // stepDone 변화 시 팝업 크기 재계산 (OHLC 카드 등 높이가 달라짐)
-  useEffect(() => { recompute() }, [stepDone, recompute])
-
+  /* ── stepDone → 패널 자동 펼침 ────────────────────────────── */
   useEffect(() => {
-    window.addEventListener('resize', recompute)
-    return () => window.removeEventListener('resize', recompute)
+    if (stepDone) setMinimized(false)
+    recompute()
+  }, [stepDone, recompute])
+
+  /* ── 스크롤·리사이즈 → 하이라이트 재계산 ─────────────────── */
+  useEffect(() => {
+    const handler = () => recompute()
+    window.addEventListener('scroll', handler, { passive: true })
+    window.addEventListener('resize', handler)
+    return () => {
+      window.removeEventListener('scroll', handler)
+      window.removeEventListener('resize', handler)
+    }
   }, [recompute])
 
   if (!currentStep) return null
   const isLast = currentIndex === steps.length - 1
 
-  /* ── 진행 가능 여부 ─────────────────────────────────────── */
   const canAdvance =
     !currentStep.actionRequired ||
     currentStep.actionRequired === 'free' ||
@@ -164,36 +131,35 @@ export function TutorialStep() {
   /* ────────────────────────────────────────────────────────
      BODY
   ──────────────────────────────────────────────────────── */
-  const Body = ({ maxH }: { maxH?: number }) => (
-    <div className="overflow-y-auto" style={maxH ? { maxHeight: Math.max(120, maxH) } : undefined}>
+  const Body = () => (
+    <div className="overflow-y-auto flex-1 px-5 pt-1 pb-2">
       {/* 헤더 */}
-      <div className="flex items-start justify-between gap-3 mb-3">
+      <div className="flex items-start justify-between gap-3 mb-2.5">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1.5">
             <span className="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full">
               {currentIndex + 1} / {steps.length}
             </span>
-            {/* 안전 메시지 */}
             <span className="text-[9px] text-gray-400">어떤 버튼도 안전해요 🙂</span>
           </div>
           <p className="font-bold text-gray-900 text-[15px] leading-snug">{currentStep.title}</p>
         </div>
         <button
           onClick={skip}
-          className="text-gray-300 hover:text-gray-400 text-[11px] shrink-0 mt-0.5 transition-colors"
+          className="text-gray-300 hover:text-gray-500 text-[11px] shrink-0 mt-1 transition-colors"
         >
           건너뛰기
         </button>
       </div>
 
-      {/* 본문 (줄바꿈 처리) */}
+      {/* 본문 */}
       <div className="text-[12.5px] text-gray-500 leading-relaxed whitespace-pre-line">
         {currentStep.body}
       </div>
 
       {/* 팁 목록 */}
       {currentStep.tips && currentStep.tips.length > 0 && (
-        <ul className="mt-3 space-y-1 rounded-2xl bg-gray-50 p-3">
+        <ul className="mt-2.5 space-y-1 rounded-2xl bg-gray-50 p-3">
           {currentStep.tips.map((tip, i) => (
             <li key={i} className="flex gap-2 text-[11.5px] text-gray-600 leading-relaxed">
               <span className="text-indigo-300 shrink-0 mt-px">•</span>
@@ -203,12 +169,10 @@ export function TutorialStep() {
         </ul>
       )}
 
-      {/* ── 인터랙티브 섹션 ──────────────────────────────── */}
-
-      {/* 미션 박스 (행동 대기 중) */}
+      {/* ── 미션 박스 (행동 대기 중) ─────────────────────────── */}
       {currentStep.mission && !stepDone && (
-        <div className="mt-3 rounded-2xl bg-indigo-50 border border-indigo-100 p-3">
-          <div className="flex items-center gap-1.5 mb-1.5">
+        <div className="mt-2.5 rounded-2xl bg-indigo-50 border border-indigo-100 p-3">
+          <div className="flex items-center gap-1.5 mb-1">
             <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wide">🎯 지금 해보세요</span>
           </div>
           <p className="text-[12px] text-indigo-700 leading-relaxed">{currentStep.mission}</p>
@@ -219,9 +183,9 @@ export function TutorialStep() {
         </div>
       )}
 
-      {/* 3지선다 판단 UI (judgment) */}
+      {/* ── 3지선다 판단 UI ──────────────────────────────────── */}
       {currentStep.actionRequired === 'judgment' && currentStep.judgment && (
-        <div className="mt-3">
+        <div className="mt-2.5">
           {!stepDone ? (
             <>
               <p className="text-[12px] font-semibold text-gray-700 mb-2">
@@ -245,7 +209,6 @@ export function TutorialStep() {
               </div>
             </>
           ) : (
-            /* 선택 후 피드백 */
             <AnimatePresence>
               <motion.div
                 initial={{ opacity: 0, y: 4 }}
@@ -270,13 +233,13 @@ export function TutorialStep() {
         </div>
       )}
 
-      {/* 캔들 OHLC 카드 (candle-click 완료 후) */}
+      {/* ── 캔들 OHLC 카드 ───────────────────────────────────── */}
       {stepDone && candleData && currentStep.actionRequired === 'candle-click' && (
         <AnimatePresence>
           <motion.div
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-3 rounded-2xl bg-slate-50 border border-slate-200 p-3"
+            className="mt-2.5 rounded-2xl bg-slate-50 border border-slate-200 p-3"
           >
             <p className="text-[10px] font-bold text-slate-500 mb-2">
               📊 클릭한 날 ({candleData.time})
@@ -305,13 +268,13 @@ export function TutorialStep() {
         </AnimatePresence>
       )}
 
-      {/* 완료 메시지 */}
+      {/* ── 완료 메시지 ─────────────────────────────────────── */}
       {stepDone && currentStep.completionMessage && (
         <AnimatePresence>
           <motion.div
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-3 rounded-2xl bg-green-50 border border-green-200 p-3 flex items-start gap-2"
+            className="mt-2.5 rounded-2xl bg-green-50 border border-green-200 p-3 flex items-start gap-2"
           >
             <span className="text-green-500 text-sm shrink-0">✅</span>
             <p className="text-[12px] text-green-700 leading-relaxed">
@@ -321,7 +284,7 @@ export function TutorialStep() {
         </AnimatePresence>
       )}
 
-      {/* 마지막 단계: 시뮬레이션 CTA */}
+      {/* ── 마지막 단계: 시뮬레이션 CTA ─────────────────────── */}
       {isLast && (
         <Link
           href="/simulate"
@@ -338,11 +301,51 @@ export function TutorialStep() {
     </div>
   )
 
+  /* ── 미니 패널 (접힌 상태 — 액션 대기 중) ──────────────────── */
+  const MiniPanel = () => (
+    <div className="px-5 py-3 flex items-center gap-3">
+      {/* 스텝 + 타이틀 */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] font-bold text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded-full shrink-0">
+            {currentIndex + 1}/{steps.length}
+          </span>
+          <p className="text-[13px] font-bold text-gray-800 truncate">{currentStep.title}</p>
+        </div>
+        {currentStep.mission && (
+          <p className="text-[11px] text-indigo-600 mt-0.5 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse shrink-0" />
+            {currentStep.mission}
+          </p>
+        )}
+      </div>
+      {/* 펼치기 버튼 */}
+      <button
+        onClick={() => setMinimized(false)}
+        className="shrink-0 text-[11px] px-2.5 py-1.5 rounded-xl border border-gray-200 text-gray-500
+                   hover:border-gray-300 hover:text-gray-700 transition-colors flex items-center gap-1"
+      >
+        <span>↑</span>
+        <span>펼치기</span>
+      </button>
+    </div>
+  )
+
   /* ── 네비게이션 ─────────────────────────────────────────── */
   const Nav = () => (
-    <div className="flex items-center justify-between flex-shrink-0 mt-4 pt-3 border-t border-gray-100">
+    <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100 flex-shrink-0">
       <ProgressDots total={steps.length} current={currentIndex} />
       <div className="flex gap-2 items-center">
+        {/* 접기 버튼 (펼쳐진 상태에서만) */}
+        {!minimized && (currentStep.actionRequired === 'candle-click' || currentStep.actionRequired === 'indicator-toggle') && !stepDone && (
+          <button
+            onClick={() => setMinimized(true)}
+            className="px-2.5 py-1.5 rounded-xl text-[11px] text-gray-400 border border-gray-200
+                       hover:border-gray-300 hover:text-gray-600 transition"
+          >
+            ↓ 접기
+          </button>
+        )}
         {currentIndex > 0 && (
           <button
             onClick={prev}
@@ -381,7 +384,7 @@ export function TutorialStep() {
   return (
     <AnimatePresence mode="wait">
       <>
-        {/* 하이라이트 링 — z-45 (오버레이 위, 팝업 아래) */}
+        {/* 하이라이트 링 — z-45, pointer-events:none */}
         {hl && (
           <motion.div
             key={`hl-${currentStep.id}`}
@@ -390,49 +393,73 @@ export function TutorialStep() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
             style={{
-              position: 'fixed', top: hl.top, left: hl.left,
-              width: hl.width, height: hl.height,
-              zIndex: 45, pointerEvents: 'none', borderRadius: 12,
-              boxShadow: '0 0 0 2px #818cf8, 0 0 0 6px rgba(99,102,241,0.2)',
+              position:      'fixed',
+              top:           hl.top,
+              left:          hl.left,
+              width:         hl.width,
+              height:        hl.height,
+              zIndex:        45,
+              pointerEvents: 'none',
+              borderRadius:  12,
+              boxShadow:     '0 0 0 2px #818cf8, 0 0 0 6px rgba(99,102,241,0.2)',
             }}
           />
         )}
 
-        {/* 플로팅 팝업 — z-50 */}
-        {pos && (
+        {/* ─── 고정 바텀 패널 — z-50 ─────────────────────────── */}
+        {showPanel && (
           <motion.div
-            key={`popup-${currentStep.id}-${stepDone}`}
-            initial={{ opacity: 0, scale: 0.94, y: 6 }}
-            animate={{ opacity: 1, scale: 1,    y: 0 }}
-            exit={{   opacity: 0, scale: 0.94,  y: 6 }}
-            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            key={`panel-${currentStep.id}-${stepDone}-${minimized}`}
+            initial={{ y: minimized ? 20 : 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{   y: 60, opacity: 0 }}
+            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
             style={{
-              position: 'fixed', top: pos.top, left: pos.left,
-              width: pos.width, maxHeight: pos.maxH,
-              zIndex: 50, display: 'flex', flexDirection: 'column',
+              position:  'fixed',
+              bottom:     0,
+              left:      '50%',
+              transform: 'translateX(-50%)',
+              width:     '100%',
+              maxWidth:   680,
+              zIndex:     50,
+              maxHeight:  minimized ? 'auto' : '52vh',
+              display:   'flex',
+              flexDirection: 'column',
             }}
-            className="bg-white rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.20)] p-5"
+            className="bg-white rounded-t-3xl shadow-[0_-8px_48px_rgba(0,0,0,0.18)]"
           >
-            {/* 방향 화살표 */}
-            {pos.dir === 'bottom' && (
-              <div style={{ position: 'absolute', top: -8, left: pos.arrowX - 8 }}
-                className="w-0 h-0 border-l-[8px] border-r-[8px] border-b-[8px] border-l-transparent border-r-transparent border-b-white" />
-            )}
-            {pos.dir === 'top' && (
-              <div style={{ position: 'absolute', bottom: -8, left: pos.arrowX - 8 }}
-                className="w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-l-transparent border-r-transparent border-t-white" />
-            )}
-            {pos.dir === 'right' && (
-              <div style={{ position: 'absolute', left: -8, top: pos.arrowY - 8 }}
-                className="w-0 h-0 border-t-[8px] border-b-[8px] border-r-[8px] border-t-transparent border-b-transparent border-r-white" />
-            )}
-            {pos.dir === 'left' && (
-              <div style={{ position: 'absolute', right: -8, top: pos.arrowY - 8 }}
-                className="w-0 h-0 border-t-[8px] border-b-[8px] border-l-[8px] border-t-transparent border-b-transparent border-l-white" />
-            )}
+            {/* 드래그 핸들 */}
+            <div className="flex justify-center pt-2.5 pb-0.5 flex-shrink-0">
+              <div className="w-9 h-1 bg-gray-200 rounded-full" />
+            </div>
 
-            <Body maxH={pos.maxH - NAV_H - 32} />
-            <Nav />
+            <AnimatePresence mode="wait">
+              {minimized ? (
+                <motion.div
+                  key="mini"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <MiniPanel />
+                  <Nav />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="full"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="flex flex-col overflow-hidden flex-1"
+                  style={{ maxHeight: 'calc(52vh - 28px)' }}
+                >
+                  <Body />
+                  <Nav />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
       </>

@@ -40,6 +40,12 @@ export interface TutorialStep {
     choices:  JudgmentChoice[]
   }
   completionMessage?: string       // 행동 완료 후 표시할 메시지
+
+  // ── 자동 상태 관리 ────────────────────────────────────
+  /** 이 단계 진입 시 자동으로 끌 지표 목록 */
+  clearIndicatorsOnEnter?: IndicatorSlug[]
+  /** 이 단계 진입 시 차트를 마지막 N봉이 보이도록 줌 */
+  focusBarsFromEnd?: number
 }
 
 export interface CandleData {

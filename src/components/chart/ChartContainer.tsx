@@ -10,7 +10,7 @@ import {
   type MouseEventParams,
   type Time,
 } from 'lightweight-charts'
-import { useChartStore } from '@/stores/chartStore'
+import { useChartStore }    from '@/stores/chartStore'
 import { useTutorialStore } from '@/stores/tutorialStore'
 import { calcBollingerBands, calcMA } from '@/lib/indicators'
 import { chartSync } from '@/lib/chartSync'
@@ -28,6 +28,14 @@ const FIB_LEVELS = [
 ]
 
 const CHART_HEIGHT = 440
+
+/* ─── 이동평균선 범례 ─────────────────────────────────────── */
+const MA_LEGEND = [
+  { period: 5,   color: '#facc15', label: 'MA5' },
+  { period: 20,  color: '#f97316', label: 'MA20' },
+  { period: 60,  color: '#a78bfa', label: 'MA60' },
+  { period: 120, color: '#f43f5e', label: 'MA120' },
+]
 
 export function ChartContainer() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -57,6 +65,8 @@ export function ChartContainer() {
     drawingTool, drawingStep,
     setDrawingTool, setDrawingStep,
   } = useChartStore()
+
+  const { focusBarsFromEnd } = useTutorialStore()
 
   // ref를 항상 최신 상태로 유지
   useEffect(() => { drawingToolRef.current = drawingTool }, [drawingTool])
@@ -248,6 +258,16 @@ export function ChartContainer() {
       maRef.current = null
     }
   }, [candleData, activeIndicators])
+
+  // ── 튜토리얼 차트 포커스 — 마지막 N봉이 보이도록 줌 ────────
+  useEffect(() => {
+    if (!focusBarsFromEnd || !chartRef.current || candleData.length === 0) return
+    const n = candleData.length
+    chartRef.current.timeScale().setVisibleLogicalRange({
+      from: Math.max(0, n - focusBarsFromEnd - 1),
+      to:   n + 3,
+    })
+  }, [focusBarsFromEnd, candleData.length])
 
   // ── Crosshair move → Canvas rubber-band (루프 없음) ───
   useEffect(() => {
@@ -442,6 +462,21 @@ export function ChartContainer() {
         className="absolute top-0 left-0 pointer-events-none"
         style={{ height: CHART_HEIGHT, borderRadius: '1rem' }}
       />
+
+      {/* 이동평균선 범례 — 켜진 경우만 표시 */}
+      {activeIndicators.has('moving-average') && (
+        <div
+          className="absolute pointer-events-none select-none flex flex-col gap-1"
+          style={{ top: 10, left: 10, zIndex: 10 }}
+        >
+          {MA_LEGEND.map(({ label, color }) => (
+            <div key={label} className="flex items-center gap-1.5">
+              <div style={{ width: 14, height: 2, backgroundColor: color, borderRadius: 1 }} />
+              <span style={{ color, fontSize: 10, fontWeight: 700, lineHeight: 1 }}>{label}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* 피보나치 레이블 HTML 오버레이 — priceToCoordinate 기반 y좌표, canvas보다 안정적 */}
       {fibLabels.map((lv, i) => (
