@@ -8,7 +8,7 @@ export const tutorialSteps: TutorialStep[] = [
   {
     id:             'candle-click',
     targetSelector: '#chart-area',
-    position:       'bottom',
+    position:       'right',
     title:          '📊 이 막대 하나가 하루예요',
     body:           '초록 막대는 오른 날, 빨간 막대는 내린 날이에요. 막대의 길이가 그날의 가격 변동폭이에요.\n\n직접 클릭하면 그날의 시가·고가·저가·종가를 확인할 수 있어요.',
     mission:        '차트에서 아무 캔들이나 클릭해보세요 🙂',
@@ -24,7 +24,7 @@ export const tutorialSteps: TutorialStep[] = [
   {
     id:             'trendline-intro',
     targetSelector: '#drawing-tools-card',
-    position:       'top',
+    position:       'left',
     title:          '↗ 추세선 — 방향을 눈으로 그어봐요',
     body:           '지표 없이도 차트를 읽는 첫걸음은 "방향"을 직접 그어보는 거예요.\n\n저점과 저점(또는 고점과 고점)을 이으면 추세를 눈으로 확인할 수 있어요.',
     tips: [
@@ -42,7 +42,7 @@ export const tutorialSteps: TutorialStep[] = [
   {
     id:             'ma-toggle',
     targetSelector: '#btn-moving-average',
-    position:       'right',
+    position:       'top',
     title:          '📈 이동평균선(MA) — 방향을 선으로 확인해요',
     body:           'MA는 "최근 N일 평균 가격"을 이은 선이에요. 방금 직접 그어본 추세선처럼, MA도 가격의 방향을 보여줘요.\n\n차이가 있다면 — MA는 자동으로 계산돼서 흔들림 없이 추세를 보여줘요.',
     mission:        '아래 분석 도구에서 MA 버튼을 클릭해보세요',
@@ -93,7 +93,7 @@ export const tutorialSteps: TutorialStep[] = [
   {
     id:                      'rsi-toggle',
     targetSelector:          '#btn-rsi',
-    position:                'right',
+    position:                'top',
     clearIndicatorsOnEnter:  ['moving-average'],
     title:                   '🌡️ RSI — "지금 과열인가요?"',
     body:                    'RSI는 0~100 사이 숫자로 주가가 얼마나 빠르게 움직이는지 보여줘요.\n\n• 70 이상 → 과매수 → 조정 가능성\n• 30 이하 → 과매도 → 반등 가능성\n• 50 기준으로 강세/약세 구분',
@@ -145,7 +145,7 @@ export const tutorialSteps: TutorialStep[] = [
   {
     id:                      'macd-toggle',
     targetSelector:          '#btn-macd',
-    position:                'right',
+    position:                'top',
     clearIndicatorsOnEnter:  ['rsi'],
     title:                   '🔄 MACD — "추세가 바뀌려나?"',
     body:                    'MACD는 두 이동평균선의 차이로 추세 전환 시점을 포착해요.\n\n• 파란선(MACD)이 주황선(시그널)을 위로 교차 → 매수 신호\n• 파란선이 주황선을 아래로 교차 → 매도 신호',
@@ -197,7 +197,7 @@ export const tutorialSteps: TutorialStep[] = [
   {
     id:                      'bb-toggle',
     targetSelector:          '#btn-bollinger',
-    position:                'right',
+    position:                'top',
     clearIndicatorsOnEnter:  ['macd'],
     title:                   '〰️ 볼린저 밴드(BB) — 변동성을 한눈에',
     body:                    'BB는 주가 위아래로 두 개의 밴드를 그려요. 밴드 간격이 좁아지면 곧 큰 움직임이 올 수 있다는 신호예요.\n\n• 상단 밴드 돌파 → 강한 상승 or 과매수\n• 하단 밴드 이탈 → 강한 하락 or 과매도',
@@ -249,7 +249,7 @@ export const tutorialSteps: TutorialStep[] = [
   {
     id:                     'fibonacci-intro',
     targetSelector:         '#drawing-tools-card',
-    position:               'top',
+    position:               'left',
     clearIndicatorsOnEnter: ['bollinger'],
     title:                  '𝚽 피보나치 — 되돌림 구간 찾기',
     body:                   '피보나치 되돌림은 상승(또는 하락) 구간에서 얼마나 되돌아갈지 예측하는 데 써요.\n\n고점→저점을 클릭하면 자동으로 레벨이 표시돼요.',
