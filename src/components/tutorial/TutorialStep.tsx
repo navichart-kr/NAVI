@@ -399,7 +399,13 @@ export function TutorialStep() {
   )
 
   /* ── 렌더 ───────────────────────────────────────────────── */
-  const isSide = mode === 'reading'   // 좌측 사이드 패널 여부
+  // 패널 수평 정렬: 분석도구 단계 → 좌측, 작도 단계 → 우측, 나머지 → 중앙
+  const panelAlign: 'left' | 'right' | 'center' =
+    mode === 'mini'                                               ? 'left'  :  // 지표 토글 → 분석도구 아래(좌)
+    mode === 'reading' && currentStep.actionRequired === 'free'  ? 'right' :  // 작도 단계 → 작도도구 아래(우)
+    'center'
+
+  const isSide = false   // (더 이상 사이드 패널 없음)
 
   return (
     <AnimatePresence mode="wait">
@@ -421,66 +427,46 @@ export function TutorialStep() {
           />
         )}
 
-        {/* ── SIDE 패널 (reading 모드 — 좌측 하단) ── */}
-        {showPanel && isSide && (
-          <motion.div
-            key={`panel-${currentStep.id}-side`}
-            initial={{ y: 64, opacity: 0 }}
-            animate={{ y: 0,  opacity: 1 }}
-            exit={{   y: 64, opacity: 0 }}
-            transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
-            style={{
-              position:      'fixed',
-              bottom:         0,
-              left:           16,
-              width:          320,
-              maxHeight:     `${ph}px`,
-              zIndex:         50,
-              display:       'flex',
-              flexDirection: 'column',
-            }}
-            className="bg-white rounded-t-3xl shadow-[0_-8px_48px_rgba(0,0,0,0.18)] overflow-hidden"
-          >
-            {/* 드래그 핸들 */}
-            <div className="flex justify-center pt-2.5 flex-shrink-0">
-              <div className="w-9 h-1 bg-gray-200 rounded-full" />
-            </div>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={mode}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.12 }}
-                className="flex flex-col overflow-hidden flex-1"
-              >
-                <ReadingContent />
-              </motion.div>
-            </AnimatePresence>
-            <Nav />
-          </motion.div>
-        )}
-
-        {/* ── BOTTOM 패널 (mini / judgment / feedback) ── */}
-        {showPanel && !isSide && (
+        {/* ── 패널 (left / right / center 정렬) ── */}
+        {showPanel && (
           <motion.div
             key={`panel-${currentStep.id}-${mode}`}
             initial={{ y: mode === 'mini' ? 16 : 64, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{   y: 40, opacity: 0 }}
             transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
-            style={{
-              position:      'fixed',
-              bottom:         0,
-              left:          '50%',
-              transform:     'translateX(-50%)',
-              width:         '100%',
-              maxWidth:       mode === 'mini' ? 680 : 600,
-              zIndex:         50,
-              maxHeight:      mode === 'mini' ? 'auto' : `${ph}px`,
-              display:       'flex',
-              flexDirection: 'column',
-            }}
+            style={
+              panelAlign === 'left' ? {
+                position:      'fixed',
+                bottom:         0,
+                left:           16,
+                width:          360,
+                maxHeight:      mode === 'mini' ? 'auto' : `${ph}px`,
+                zIndex:         50,
+                display:       'flex',
+                flexDirection: 'column',
+              } : panelAlign === 'right' ? {
+                position:      'fixed',
+                bottom:         0,
+                right:          16,
+                width:          360,
+                maxHeight:     `${ph}px`,
+                zIndex:         50,
+                display:       'flex',
+                flexDirection: 'column',
+              } : {
+                position:      'fixed',
+                bottom:         0,
+                left:          '50%',
+                transform:     'translateX(-50%)',
+                width:         '100%',
+                maxWidth:       600,
+                maxHeight:     `${ph}px`,
+                zIndex:         50,
+                display:       'flex',
+                flexDirection: 'column',
+              }
+            }
             className="bg-white rounded-t-3xl shadow-[0_-8px_48px_rgba(0,0,0,0.18)] overflow-hidden"
           >
             {/* 드래그 핸들 */}
@@ -499,6 +485,7 @@ export function TutorialStep() {
               >
                 {mode === 'mini'     && <MiniContent />}
                 {mode === 'judgment' && <JudgmentContent />}
+                {mode === 'reading'  && <ReadingContent />}
                 {mode === 'feedback' && <FeedbackContent />}
               </motion.div>
             </AnimatePresence>
