@@ -26,11 +26,11 @@ function getMode(step: TStep, done: boolean): PanelMode {
   return 'reading'
 }
 
-/* ─── 패널 최대 높이 ────────────────────────────────────────── */
+/* ─── 패널 최대 높이 (bottom 패널 전용) ────────────────────── */
 const PANEL_H: Record<PanelMode, number> = {
   mini:     72,
   judgment: 300,
-  reading:  380,
+  reading:  380,   // 실제로는 left 사이드 패널 사용 — 이 값은 smartScroll 계산에만 쓰임
   feedback: 220,
 }
 
@@ -121,7 +121,8 @@ export function TutorialStep() {
     const curMode = getMode(currentStep, false)
     const curPh   = PANEL_H[curMode]
 
-    smartScroll(currentStep, curPh)
+    // reading 모드는 좌측 사이드 패널 → 하단 공간을 차지하지 않음
+    smartScroll(currentStep, curMode === 'reading' ? 0 : curPh)
 
     timerRef.current = setTimeout(() => {
       recompute()
@@ -398,6 +399,8 @@ export function TutorialStep() {
   )
 
   /* ── 렌더 ───────────────────────────────────────────────── */
+  const isSide = mode === 'reading'   // 좌측 사이드 패널 여부
+
   return (
     <AnimatePresence mode="wait">
       <>
@@ -418,8 +421,44 @@ export function TutorialStep() {
           />
         )}
 
-        {/* 패널 — z-50 */}
-        {showPanel && (
+        {/* ── SIDE 패널 (reading 모드 — 좌측 플로팅) ── */}
+        {showPanel && isSide && (
+          <motion.div
+            key={`panel-${currentStep.id}-side`}
+            initial={{ x: -28, opacity: 0 }}
+            animate={{ x: 0,   opacity: 1 }}
+            exit={{   x: -28, opacity: 0 }}
+            transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
+            style={{
+              position:      'fixed',
+              left:           16,
+              top:            80,
+              width:          288,
+              maxHeight:     'calc(100vh - 104px)',
+              zIndex:         50,
+              display:       'flex',
+              flexDirection: 'column',
+            }}
+            className="bg-white rounded-2xl shadow-[0_8px_48px_rgba(0,0,0,0.22)] border border-gray-100 overflow-hidden"
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={mode}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.12 }}
+                className="flex flex-col overflow-hidden flex-1"
+              >
+                <ReadingContent />
+              </motion.div>
+            </AnimatePresence>
+            <Nav />
+          </motion.div>
+        )}
+
+        {/* ── BOTTOM 패널 (mini / judgment / feedback) ── */}
+        {showPanel && !isSide && (
           <motion.div
             key={`panel-${currentStep.id}-${mode}`}
             initial={{ y: mode === 'mini' ? 16 : 64, opacity: 0 }}
@@ -427,15 +466,15 @@ export function TutorialStep() {
             exit={{   y: 40, opacity: 0 }}
             transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
             style={{
-              position:  'fixed',
-              bottom:     0,
-              left:      '50%',
-              transform: 'translateX(-50%)',
-              width:     '100%',
-              maxWidth:   mode === 'mini' ? 680 : 600,
-              zIndex:     50,
-              maxHeight:  mode === 'mini' ? 'auto' : `${ph}px`,
-              display:   'flex',
+              position:      'fixed',
+              bottom:         0,
+              left:          '50%',
+              transform:     'translateX(-50%)',
+              width:         '100%',
+              maxWidth:       mode === 'mini' ? 680 : 600,
+              zIndex:         50,
+              maxHeight:      mode === 'mini' ? 'auto' : `${ph}px`,
+              display:       'flex',
               flexDirection: 'column',
             }}
             className="bg-white rounded-t-3xl shadow-[0_-8px_48px_rgba(0,0,0,0.18)] overflow-hidden"
@@ -456,7 +495,6 @@ export function TutorialStep() {
               >
                 {mode === 'mini'     && <MiniContent />}
                 {mode === 'judgment' && <JudgmentContent />}
-                {mode === 'reading'  && <ReadingContent />}
                 {mode === 'feedback' && <FeedbackContent />}
               </motion.div>
             </AnimatePresence>
