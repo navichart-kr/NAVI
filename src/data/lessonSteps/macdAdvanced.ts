@@ -3,6 +3,7 @@ import type { TutorialStep } from '@/types'
 /**
  * MACD 심화 레슨 — 5단계
  * 목표: 관찰 → 판단 → 검증 구조로 교차 신호 체득
+ * floatSide: 'bottom-right' → MACD 차트를 가리지 않음
  */
 export const macdAdvancedSteps: TutorialStep[] = [
 
@@ -25,6 +26,7 @@ export const macdAdvancedSteps: TutorialStep[] = [
     id:               'macd-adv-golden',
     targetSelector:   '#macd-chart',
     position:         'top',
+    floatSide:        'bottom-right',
     focusBarsFromEnd: 120,
     title:            '골든크로스 — 히스토그램은 어떻게 될까요?',
     body:             'MACD 차트를 보세요.\n파란선(MACD)이 주황선(시그널)을 아래에서 위로 교차하는 구간이 골든크로스예요.\n\n이 교차 순간, 히스토그램 막대는 어떻게 변할까요?',
@@ -65,6 +67,7 @@ export const macdAdvancedSteps: TutorialStep[] = [
     id:               'macd-adv-dead',
     targetSelector:   '#macd-chart',
     position:         'top',
+    floatSide:        'bottom-right',
     focusBarsFromEnd: 200,
     title:            '데드크로스 — 어떤 신호일까요?',
     body:             '반대로 파란선(MACD)이 주황선(시그널)을 위에서 아래로 교차하는 구간이 데드크로스예요.\n\nMACD 차트에서 데드크로스 구간을 찾아보고, 이 신호의 의미를 판단해봐요.',
@@ -105,6 +108,7 @@ export const macdAdvancedSteps: TutorialStep[] = [
     id:               'macd-adv-histogram',
     targetSelector:   '#macd-chart',
     position:         'top',
+    floatSide:        'bottom-right',
     focusBarsFromEnd: 60,
     title:            '히스토그램 — 교차의 예고 신호',
     body:             'MACD 차트의 막대(히스토그램)를 보세요.\n막대 길이가 추세의 강도를 보여줘요.\n\n막대가 점점 짧아지고 있다면 무슨 의미일까요?',
@@ -145,6 +149,7 @@ export const macdAdvancedSteps: TutorialStep[] = [
     id:               'macd-adv-complete',
     targetSelector:   '#macd-chart',
     position:         'top',
+    floatSide:        'bottom-right',
     focusBarsFromEnd: 30,
     title:            'MACD 심화 완료',
     body:             '골든크로스, 데드크로스, 히스토그램을 직접 판단해봤어요.\n\n핵심:\n• 히스토그램이 0선을 돌파 = 교차 발생\n• 막대가 짧아지면 교차 예고\n• 0선 위 골든크로스 = 강한 신호\n\n실전 챌린지에서 MACD를 활용해봐요!',

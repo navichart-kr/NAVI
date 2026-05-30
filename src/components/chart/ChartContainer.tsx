@@ -570,7 +570,7 @@ export function ChartContainer() {
           {/* ① 저점 — 초록 펄스 (candle 아래) */}
           <div
             className="absolute pointer-events-none select-none flex flex-col items-center"
-            style={{ left: fibGuideMarkers.low.x - 10, top: fibGuideMarkers.low.y + 6, zIndex: 16 }}
+            style={{ left: fibGuideMarkers.low.x - 10, top: fibGuideMarkers.low.y + 6, zIndex: 46 }}
           >
             <div className="relative w-5 h-5 mb-1">
               <div className="absolute inset-0 rounded-full bg-emerald-400/50 animate-ping" />
@@ -593,7 +593,7 @@ export function ChartContainer() {
           {/* ② 고점 — 주황 펄스 (candle 위) */}
           <div
             className="absolute pointer-events-none select-none flex flex-col-reverse items-center"
-            style={{ left: fibGuideMarkers.high.x - 10, top: fibGuideMarkers.high.y - 46, zIndex: 16 }}
+            style={{ left: fibGuideMarkers.high.x - 10, top: fibGuideMarkers.high.y - 46, zIndex: 46 }}
           >
             <div className="relative w-5 h-5 mt-1">
               <div className="absolute inset-0 rounded-full bg-orange-400/50 animate-ping" />

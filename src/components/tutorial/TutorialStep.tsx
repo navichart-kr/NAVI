@@ -234,22 +234,45 @@ export function TutorialStep() {
     const cardH = cardRef.current.offsetHeight
     if (cardH === 0) return  // not measured yet
 
+    const vw = window.innerWidth
+    const vh = window.innerHeight
+
+    // ── floatSide: 카드를 뷰포트 모서리에 고정 ────────────────
+    // targetSelector 스포트라이트는 그대로 적용
+    if (currentStep.floatSide) {
+      const el = document.querySelector(currentStep.targetSelector)
+      if (el) {
+        const r = el.getBoundingClientRect()
+        if (r.bottom >= 0 && r.top <= vh) setHl(mkHL(el))
+        else setHl(null)
+      } else {
+        setHl(null)
+      }
+      const M = 16
+      setCardPos(
+        vw >= 768
+          ? { left: vw - cardW - M, top: Math.max(56, vh - cardH - M) }
+          : { left: Math.max(M, (vw - cardW) / 2), top: Math.max(56, vh - cardH - M) }
+      )
+      return
+    }
+
     const el = document.querySelector(currentStep.targetSelector)
     if (!el) {
       setHl(null)
       setCardPos({
         top:  72,
-        left: Math.max(8, (window.innerWidth - cardW) / 2),
+        left: Math.max(8, (vw - cardW) / 2),
       })
       return
     }
 
     const r = el.getBoundingClientRect()
-    if (r.bottom < 0 || r.top > window.innerHeight) {
+    if (r.bottom < 0 || r.top > vh) {
       setHl(null)
       setCardPos({
         top:  72,
-        left: Math.max(8, (window.innerWidth - cardW) / 2),
+        left: Math.max(8, (vw - cardW) / 2),
       })
       return
     }

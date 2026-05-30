@@ -3,6 +3,7 @@ import type { TutorialStep } from '@/types'
 /**
  * RSI 심화 레슨 — 5단계
  * 목표: 과매수/과매도 개념 체득 + RSI·MA 결합 해석
+ * floatSide: 'bottom-right' → RSI 차트를 가리지 않음
  */
 export const rsiAdvancedSteps: TutorialStep[] = [
 
@@ -25,6 +26,7 @@ export const rsiAdvancedSteps: TutorialStep[] = [
     id:               'rsi-adv-overbought',
     targetSelector:   '#rsi-chart',
     position:         'top',
+    floatSide:        'bottom-right',
     focusBarsFromEnd: 120,
     title:            'RSI 70 이상 — 이 상태의 이름은?',
     body:             'RSI 보라색 선이 빨간 기준선(70)을 넘은 구간을 찾아봐요.\n\nRSI 값이 70을 넘었을 때 이 상태를 무엇이라고 부르나요?',
@@ -65,6 +67,7 @@ export const rsiAdvancedSteps: TutorialStep[] = [
     id:               'rsi-adv-oversold',
     targetSelector:   '#rsi-chart',
     position:         'top',
+    floatSide:        'bottom-right',
     focusBarsFromEnd: 240,
     title:            'RSI 30 이하 — 어떤 가능성이 생길까요?',
     body:             'RSI가 초록 기준선(30) 아래로 내려간 구간을 찾아봐요.\n\nRSI 30 아래는 "과매도" 구간이에요.\n이 상황에서 일반적으로 어떤 가능성이 높아질까요?',
@@ -117,6 +120,7 @@ export const rsiAdvancedSteps: TutorialStep[] = [
     id:               'rsi-adv-complete',
     targetSelector:   '#rsi-chart',
     position:         'top',
+    floatSide:        'bottom-right',
     focusBarsFromEnd: 30,
     title:            'RSI 심화 완료',
     body:             '과매수·과매도 구간을 직접 판단하고 검증해봤어요.\n\n핵심:\n• RSI 70+ = 과매수 (상승 과열)\n• RSI 30- = 과매도 (반등 가능성)\n• MA 방향이 RSI 신호를 확인해줘요\n\n실전 챌린지에서 이 개념을 적용해봐요!',

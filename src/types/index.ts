@@ -57,6 +57,13 @@ export interface TutorialStep {
   clearDrawingsOnEnter?: boolean
 
   /**
+   * 카드를 뷰포트 모서리에 고정 — 차트를 봐야 하는 단계에서 사용
+   * 'bottom-right': 우하단 (데스크톱) / 하단 중앙 (모바일 < 768px)
+   * targetSelector는 그대로 스포트라이트에 사용됨
+   */
+  floatSide?: 'bottom-right'
+
+  /**
    * 피보나치 작도 가이드 — 저점·고점 위치에 펄스 마커 표시
    * ChartContainer 가 priceToCoordinate + timeToCoordinate 로 위치 계산 후
    * HTML 오버레이로 렌더링한다.
