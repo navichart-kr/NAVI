@@ -535,15 +535,17 @@ export function ChartContainer() {
         </div>
       )}
 
-      {drawingStep === 1 && (
+      {/* 작도 가이드 토스트 — 피보나치는 0·1 두 단계 모두 안내 */}
+      {(drawingTool === 'fibonacci' || (drawingTool === 'trendline' && drawingStep === 1)) && (
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10
                         flex items-center gap-2 px-3.5 py-1.5
                         bg-amber-500/20 border border-amber-400/50
                         rounded-full pointer-events-none">
           <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-          <span className="text-xs text-amber-300 font-medium">
-            {drawingTool === 'trendline' && '끝점을 클릭하세요'}
-            {drawingTool === 'fibonacci' && '반대 끝점을 클릭하세요'}
+          <span className="text-xs text-amber-300 font-semibold">
+            {drawingTool === 'fibonacci' && drawingStep === 0 && '① 상승 시작 저점을 클릭하세요'}
+            {drawingTool === 'fibonacci' && drawingStep === 1 && '② 이제 고점을 클릭해서 완성하세요'}
+            {drawingTool === 'trendline' && drawingStep === 1 && '끝점을 클릭하세요'}
           </span>
         </div>
       )}
