@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { SimulateChart } from '@/components/simulate/SimulateChart'
+import { SimulateChart }  from '@/components/simulate/SimulateChart'
+import { ChallengeIntro } from '@/components/simulate/ChallengeIntro'
 import type { CandleData } from '@/types'
 
 /* ─── 구간 설정 ──────────────────────────────────────────────── */
@@ -29,6 +30,14 @@ function pickWindow(data: CandleData[], seed?: number) {
 }
 
 /* ── useSearchParams 는 Suspense 안에서만 사용 가능 ── */
+
+/** ?guide=1 여부를 읽어 ChallengeIntro에 forceGuide 전달 */
+function ChallengeIntroWrapper() {
+  const searchParams = useSearchParams()
+  const forceGuide   = searchParams.get('guide') === '1'
+  return <ChallengeIntro forceGuide={forceGuide} />
+}
+
 function WelcomeBanner() {
   const searchParams = useSearchParams()
   const fromTutorial = searchParams.get('from') === 'tutorial'
@@ -109,14 +118,19 @@ export default function SimulatePage() {
   return (
     <div className="min-h-screen bg-navi-bg px-4 py-6 max-w-4xl mx-auto">
 
+      {/* ── 첫 진입 인트로 (localStorage 체크) ──────────────── */}
+      <Suspense fallback={null}>
+        <ChallengeIntroWrapper />
+      </Suspense>
+
       {/* ── 헤더 ────────────────────────────────────────────── */}
       <div className="flex items-center justify-between mb-4">
         <Link href="/chart" className="text-navi-muted text-sm hover:text-navi-text">
           ← 차트로 돌아가기
         </Link>
         <div className="text-center">
-          <h1 className="text-navi-text font-bold text-sm">예측 시뮬레이션</h1>
-          <p className="text-navi-muted text-xs">NVDA · 과거 데이터 챌린지</p>
+          <h1 className="text-navi-text font-bold text-sm">실전 챌린지</h1>
+          <p className="text-navi-muted text-xs">NVDA · 과거 차트 분석</p>
         </div>
         <button onClick={retry} className="text-xs text-navi-muted hover:text-navi-text transition-colors">
           다른 구간

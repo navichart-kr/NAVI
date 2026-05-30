@@ -182,9 +182,9 @@ function buildTestQs(c: CandleData[]): TestQ[] {
         { v: 'down',     icon: '↓', label: '하락' },
       ],
       feedback: {
-        up:       '상승 예측! 시뮬레이션에서 직접 확인해봐요.',
-        sideways: '횡보 예측! 시뮬레이션에서 검증해봐요.',
-        down:     '하락 예측! 시뮬레이션에서 맞는지 확인해봐요.',
+        up:       '상승 예측! 실전 챌린지에서 직접 확인해봐요.',
+        sideways: '횡보 예측! 실전 챌린지에서 검증해봐요.',
+        down:     '하락 예측! 실전 챌린지에서 맞는지 확인해봐요.',
       },
     },
   ]
@@ -197,7 +197,7 @@ export function TutorialStep() {
   const {
     currentStep, currentIndex, steps,
     stepDone, candleData: clickedCandle, chosenJudgment,
-    next, prev, skip, notifyJudgment, markStepDone,
+    next, prev, skip, complete, notifyJudgment, markStepDone,
   } = useTutorialStore()
   const { activeIndicators, candleData: chartCandles } = useChartStore()
 
@@ -373,16 +373,15 @@ export function TutorialStep() {
             {canNext ? '다음 →' : '먼저 해보세요'}
           </button>
         ) : (
-          /* 마지막 단계 = 가장 강조된 Action */
-          <Link
-            href="/simulate?from=tutorial"
-            onClick={skip}
+          /* 마지막 단계 = 완료 화면으로 전환 */
+          <button
+            onClick={complete}
             className="px-3 py-1.5 rounded-lg text-[11px] font-semibold
                        bg-navi-action text-white hover:bg-navi-action-hover transition active:scale-95
                        shadow-[0_2px_12px_rgba(91,127,255,0.35)]"
           >
-            시뮬레이션 시작하기
-          </Link>
+            기초 과정 완료
+          </button>
         )}
       </div>
     </div>

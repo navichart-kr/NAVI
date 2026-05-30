@@ -25,7 +25,7 @@ const PHASES = [
   },
   {
     phase: '04',
-    label: '예측 시뮬레이션',
+    label: '실전 챌린지',
     steps: '실제 NVDA 과거 데이터  ·  미래 30일 예측',
     highlight: true,
   },

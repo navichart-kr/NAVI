@@ -9,7 +9,7 @@ const STEPS = [
   { key: 'rsi',            label: 'RSI',       abbr: 'RSI',  desc: '과열 신호',   type: 'indicator' as const },
   { key: 'macd',           label: 'MACD',      abbr: 'MACD', desc: '추세 전환',   type: 'indicator' as const },
   { key: 'drawing',        label: '작도',       abbr: '↗',   desc: '직접 분석',   type: 'drawing'   as const },
-  { key: 'simulate',       label: '시뮬레이션', abbr: '▶',   desc: '실전 예측',   type: 'simulate'  as const },
+  { key: 'simulate',       label: '실전 챌린지', abbr: '▶',   desc: '실전 예측',   type: 'simulate'  as const },
 ]
 
 export function LearningPath() {

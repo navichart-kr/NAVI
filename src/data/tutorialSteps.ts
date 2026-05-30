@@ -320,8 +320,8 @@ export const tutorialSteps: TutorialStep[] = [
     id:             'simulate-intro',
     targetSelector: '#chart-area',
     position:       'bottom',
-    title:          '이제 진짜 테스트예요',
-    body:           '시뮬레이션에서는 실제 NVDA 과거 데이터를 보고 미래를 직접 예측해요.\n\n예측 시점 이후 30일이 숨겨져 있어요. 방금 배운 MA·RSI·MACD를 켜고 분석한 뒤 예측해보세요.',
+    title:          '이제 실전 챌린지예요',
+    body:           '실전 챌린지에서는 실제 NVDA 과거 데이터를 보고 미래를 직접 예측해요.\n\n예측 시점 이후 30일이 숨겨져 있어요. 방금 배운 MA·RSI·MACD를 켜고 분석한 뒤 예측해보세요.',
     tips: [
       '예측 전 분석 도구를 반드시 켜봐요',
       '여러 지표가 같은 방향을 가리키면 더 확신할 수 있어요',
@@ -337,8 +337,8 @@ export const tutorialSteps: TutorialStep[] = [
     id:             'simulate-cta',
     targetSelector: '#simulate-link',
     position:       'bottom',
-    title:          '첫 번째 챌린지를 시작해봐요',
-    body:           '준비됐나요? 시뮬레이션 버튼을 누르면 실제 과거 데이터가 펼쳐져요.\n\n분석하고, 예측하고, 결과를 확인해봐요. 처음엔 틀려도 완전히 괜찮아요!',
+    title:          '기초 과정 거의 완료예요',
+    body:           '아래 "기초 과정 완료" 버튼을 누르면 다음 행동을 선택할 수 있어요.\n\n실전 챌린지, 추가 학습, 또는 자유 차트 분석 — 원하는 것을 선택해봐요.',
     actionRequired: 'free',
   },
 ]

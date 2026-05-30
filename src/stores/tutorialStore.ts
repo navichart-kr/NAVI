@@ -19,12 +19,17 @@ interface TutorialState {
   // ── 차트 포커스 ──────────────────────────────────────
   focusBarsFromEnd: number | null
 
+  // ── 완료 화면 ────────────────────────────────────────
+  showCompletionScreen: boolean
+
   // ── 액션 ──────────────────────────────────────────────
-  start:  () => void
-  next:   () => void
-  prev:   () => void
-  skip:   () => void
-  reset:  () => void
+  start:             () => void
+  next:              () => void
+  prev:              () => void
+  skip:              () => void
+  reset:             () => void
+  complete:          () => void
+  dismissCompletion: () => void
 
   markStepDone:      () => void
   notifyCandleClick: (data: CandleData) => void
@@ -62,22 +67,24 @@ function clearDrawings() {
 export const useTutorialStore = create<TutorialState>()(
   persist(
     (set, get) => ({
-      isActive:         false,
-      currentIndex:     0,
-      hasCompletedOnce: false,
-      steps:            tutorialSteps,
-      currentStep:      null,
+      isActive:             false,
+      currentIndex:         0,
+      hasCompletedOnce:     false,
+      showCompletionScreen: false,
+      steps:                tutorialSteps,
+      currentStep:          null,
       ...INITIAL_ACTION_STATE,
 
       start: () => {
-        // 튜토리얼 시작 시 활성 지표 전부 초기화
+        // 튜토리얼 시작 시 활성 지표 전부 초기화, 완료 화면도 닫기
         const { activeIndicators, toggleIndicator } = useChartStore.getState()
         activeIndicators.forEach(slug => toggleIndicator(slug))
 
         set({
-          isActive:     true,
-          currentIndex: 0,
-          currentStep:  tutorialSteps[0],
+          isActive:             true,
+          currentIndex:         0,
+          currentStep:          tutorialSteps[0],
+          showCompletionScreen: false,
           ...INITIAL_ACTION_STATE,
         })
       },
@@ -156,10 +163,22 @@ export const useTutorialStore = create<TutorialState>()(
       },
 
       skip: () =>
-        set({ isActive: false, hasCompletedOnce: true, currentStep: null, ...INITIAL_ACTION_STATE }),
+        set({ isActive: false, hasCompletedOnce: true, currentStep: null, showCompletionScreen: false, ...INITIAL_ACTION_STATE }),
 
       reset: () =>
-        set({ isActive: false, currentIndex: 0, currentStep: null, ...INITIAL_ACTION_STATE }),
+        set({ isActive: false, currentIndex: 0, currentStep: null, showCompletionScreen: false, ...INITIAL_ACTION_STATE }),
+
+      /** 마지막 단계 완료 — 완료 화면으로 전환 */
+      complete: () =>
+        set({
+          isActive:             false,
+          hasCompletedOnce:     true,
+          currentStep:          null,
+          showCompletionScreen: true,
+          ...INITIAL_ACTION_STATE,
+        }),
+
+      dismissCompletion: () => set({ showCompletionScreen: false }),
 
       markStepDone: () => set({ stepDone: true }),
 

@@ -8,10 +8,11 @@ import { MACDChart } from '@/components/chart/MACDChart'
 import { IndicatorToolbar } from '@/components/chart/IndicatorToolbar'
 import { PeriodToolbar } from '@/components/chart/PeriodToolbar'
 import { DrawingToolbar } from '@/components/chart/DrawingToolbar'
-import { TutorialManager } from '@/components/tutorial/TutorialManager'
-import { IndicatorToast } from '@/components/ui/IndicatorToast'
-import { NaviSymbol } from '@/components/ui/NaviSymbol'
-import { useTutorialStore } from '@/stores/tutorialStore'
+import { TutorialManager }    from '@/components/tutorial/TutorialManager'
+import { TutorialMenuButton } from '@/components/tutorial/TutorialMenuButton'
+import { IndicatorToast }     from '@/components/ui/IndicatorToast'
+import { NaviSymbol }         from '@/components/ui/NaviSymbol'
+import { useTutorialStore }   from '@/stores/tutorialStore'
 import { useChartStore } from '@/stores/chartStore'
 import { useLearnStore } from '@/stores/learnStore'
 import { useStockData } from '@/hooks/useStockData'
@@ -104,18 +105,10 @@ function ChartPageInner() {
                          hover:border-navi-action/40 hover:bg-navi-action/[0.06]
                          transition-all duration-150"
             >
-              시뮬레이션
+              실전 챌린지
             </Link>
-            {/* 튜토리얼 = Action color (사용자가 클릭해야 하는 요소) */}
-            <button
-              onClick={start}
-              className="h-7 px-3 text-[11px] font-semibold rounded-lg
-                         bg-navi-action/10 text-navi-text border border-navi-action/25
-                         hover:bg-navi-action/18 hover:border-navi-action/45
-                         transition-all duration-150"
-            >
-              튜토리얼
-            </button>
+            {/* 학습 메뉴 버튼 */}
+            <TutorialMenuButton />
           </div>
         </div>
       </header>
