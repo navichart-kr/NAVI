@@ -197,7 +197,7 @@ export function TutorialStep() {
   const {
     currentStep, currentIndex, steps, isLesson,
     stepDone, candleData: clickedCandle, chosenJudgment,
-    next, prev, skip, complete, notifyJudgment, markStepDone,
+    next, prev, skip, complete, completeLesson, notifyJudgment, markStepDone,
   } = useTutorialStore()
   const { activeIndicators, candleData: chartCandles } = useChartStore()
 
@@ -213,6 +213,11 @@ export function TutorialStep() {
   const [testQIdx,    setTestQIdx]    = useState(0)
   const [testAnswers, setTestAnswers] = useState<Record<string, string>>({})
   const [testDone,    setTestDone]    = useState(false)
+
+  // ── 정답/오답 판정 (레슨 전용) ──────────────────────────
+  const [wrongCount,       setWrongCount]       = useState(0)
+  const [showWrongFB,      setShowWrongFB]       = useState(false)
+  const [wrongChoiceValue, setWrongChoiceValue]  = useState<string | null>(null)
 
   /* ── Derived mode ─────────────────────────────────────── */
   const mode: CardMode =
@@ -264,6 +269,7 @@ export function TutorialStep() {
 
     setShowCard(false); setHl(null); setCardPos(null)
     setTestQIdx(0); setTestAnswers({}); setTestDone(false)
+    setWrongCount(0); setShowWrongFB(false); setWrongChoiceValue(null)
 
     smartScroll(currentStep)
 
@@ -373,9 +379,9 @@ export function TutorialStep() {
             {canNext ? '다음 →' : '먼저 해보세요'}
           </button>
         ) : isLesson ? (
-          /* 레슨 마지막 단계 = 완료 화면 없이 종료 */
+          /* 레슨 마지막 단계 = 지표·작도 초기화 후 종료 */
           <button
-            onClick={skip}
+            onClick={completeLesson}
             className="px-3 py-1.5 rounded-lg text-[11px] font-semibold
                        bg-navi-action text-white hover:bg-navi-action-hover transition active:scale-95
                        shadow-[0_2px_12px_rgba(91,127,255,0.35)]"
@@ -439,26 +445,122 @@ export function TutorialStep() {
     </div>
   )
 
-  /* JUDGMENT content — 선택지 hover = Action ─────────── */
+  /* 판단 클릭 핸들러 — correctValue 있으면 정답/오답 분기 ── */
+  function handleJudgmentClick(value: string) {
+    if (!currentStep?.judgment) return
+    const { correctValue } = currentStep.judgment
+    if (correctValue !== undefined) {
+      if (value === correctValue) {
+        setWrongCount(0); setShowWrongFB(false); setWrongChoiceValue(null)
+        notifyJudgment(value)
+      } else {
+        setWrongCount(c => c + 1)
+        setWrongChoiceValue(value)
+        setShowWrongFB(true)
+      }
+    } else {
+      // correctValue 미정의 → 어느 선택이든 진행
+      notifyJudgment(value)
+    }
+  }
+
+  /* JUDGMENT content — 선택지 / 오답 피드백 분기 ────────── */
   const judgmentContent = currentStep.judgment ? (
     <div className="px-4 py-3 space-y-2">
       <p className="text-[14px] font-bold text-navi-text leading-snug">{currentStep.title}</p>
       <p className="text-[12px] text-navi-secondary">{currentStep.judgment.question}</p>
-      <div className="space-y-1.5">
-        {currentStep.judgment.choices.map(c => (
-          <button
-            key={c.value}
-            onClick={() => notifyJudgment(c.value)}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left
-                       border border-navi-border2 transition-all
-                       hover:border-navi-action/40 hover:bg-navi-action/[0.06]
-                       active:scale-[0.98]"
+
+      <AnimatePresence mode="wait">
+        {showWrongFB ? (
+          /* ── 오답 피드백 화면 ──────────────────────────── */
+          <motion.div
+            key="wrong-feedback"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.14 }}
+            className="space-y-2"
           >
-            <span className="text-[15px] font-bold shrink-0 leading-none text-navi-text w-5 text-center">{c.icon}</span>
-            <span className="text-[12px] font-medium text-navi-text">{c.label}</span>
-          </button>
-        ))}
-      </div>
+            {/* 오답 배너 */}
+            <div className="bg-navi-danger/[0.08] border border-navi-danger/25 rounded-lg p-3">
+              <p className="text-[12px] font-semibold text-navi-text mb-1.5">❌ 다시 살펴보세요</p>
+              {wrongChoiceValue && (() => {
+                const chosen = currentStep.judgment!.choices.find(c => c.value === wrongChoiceValue)
+                return chosen ? (
+                  <p className="text-[11.5px] text-navi-secondary leading-relaxed">
+                    {chosen.label} — {chosen.feedback}
+                  </p>
+                ) : null
+              })()}
+            </div>
+
+            {/* 힌트 */}
+            {currentStep.judgment.hints && currentStep.judgment.hints.length > 0 && (
+              <div className="bg-navi-surface3 rounded-lg px-3 py-2.5">
+                <p className="text-[9.5px] font-bold text-navi-muted uppercase tracking-[0.08em] mb-1.5">
+                  힌트
+                </p>
+                {currentStep.judgment.hints.map((h, i) => (
+                  <p key={i} className="text-[11.5px] text-navi-secondary leading-snug">
+                    • {h}
+                  </p>
+                ))}
+              </div>
+            )}
+
+            {/* 다시 시도 */}
+            <button
+              onClick={() => { setShowWrongFB(false); setWrongChoiceValue(null) }}
+              className="w-full py-2 rounded-lg text-[12px] font-semibold
+                         border border-navi-border2 text-navi-text
+                         hover:border-navi-action/40 hover:bg-navi-action/[0.06]
+                         transition-all active:scale-[0.98]"
+            >
+              다시 시도 →
+            </button>
+
+            {/* 2회 이상 오답 시 정답 보기 */}
+            {wrongCount >= 2 && (
+              <button
+                onClick={() => {
+                  notifyJudgment(currentStep.judgment!.correctValue!)
+                  setShowWrongFB(false)
+                }}
+                className="w-full py-1.5 text-[11px] text-navi-muted
+                           hover:text-navi-secondary transition-colors text-center"
+              >
+                정답 보기
+              </button>
+            )}
+          </motion.div>
+        ) : (
+          /* ── 선택지 화면 ──────────────────────────────── */
+          <motion.div
+            key="choices"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.14 }}
+            className="space-y-1.5"
+          >
+            {currentStep.judgment.choices.map(c => (
+              <button
+                key={c.value}
+                onClick={() => handleJudgmentClick(c.value)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left
+                           border border-navi-border2 transition-all
+                           hover:border-navi-action/40 hover:bg-navi-action/[0.06]
+                           active:scale-[0.98]"
+              >
+                <span className="text-[15px] font-bold shrink-0 leading-none text-navi-text w-5 text-center">
+                  {c.icon}
+                </span>
+                <span className="text-[12px] font-medium text-navi-text">{c.label}</span>
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   ) : null
 
@@ -467,13 +569,23 @@ export function TutorialStep() {
     <div className="px-4 py-3.5 space-y-2.5">
       <p className="text-[14px] font-bold text-navi-text leading-snug">{currentStep.title}</p>
 
-      {/* Judgment result — info surface, 흰 텍스트 */}
+      {/* Judgment result — 정답 = success / 기타 = info */}
       {currentStep.actionRequired === 'judgment' &&
        currentStep.judgment && chosenJudgment && (() => {
-         const chosen = currentStep.judgment!.choices.find(c => c.value === chosenJudgment)
+         const chosen     = currentStep.judgment!.choices.find(c => c.value === chosenJudgment)
+         const isCorrect  = currentStep.judgment!.correctValue !== undefined
+                            && chosenJudgment === currentStep.judgment!.correctValue
          return chosen ? (
-           <div className="bg-navi-info/[0.07] border border-navi-info/25 rounded-lg p-3">
+           <div className={clsx(
+             'rounded-lg p-3',
+             isCorrect
+               ? 'bg-navi-success/[0.07] border border-navi-success/25'
+               : 'bg-navi-info/[0.07] border border-navi-info/25',
+           )}>
              <div className="flex items-center gap-2 mb-1.5">
+               {isCorrect && (
+                 <span className="text-[11px] font-bold text-navi-success">✓</span>
+               )}
                <span className="text-[14px] font-bold leading-none text-navi-text">{chosen.icon}</span>
                <span className="text-[12px] font-semibold text-navi-text">{chosen.label}</span>
              </div>
@@ -724,7 +836,7 @@ export function TutorialStep() {
               {/* Content (animated on mode change) */}
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={`${mode}-${testQIdx}-${String(testDone)}`}
+                  key={`${mode}-${testQIdx}-${String(testDone)}-${String(showWrongFB)}`}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}

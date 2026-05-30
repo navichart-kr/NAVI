@@ -36,8 +36,12 @@ export interface TutorialStep {
   actionRequired?: 'candle-click' | 'indicator-toggle' | 'judgment' | 'free' | 'comprehensive-test'
   indicatorKey?:   string
   judgment?: {
-    question: string
-    choices:  JudgmentChoice[]
+    question:      string
+    choices:       JudgmentChoice[]
+    /** 정답 choice.value (레슨 전용 — 없으면 어느 선택도 허용) */
+    correctValue?: string
+    /** 오답 시 표시할 힌트 목록 */
+    hints?:        string[]
   }
   completionMessage?: string
 

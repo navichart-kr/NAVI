@@ -45,6 +45,8 @@ interface TutorialState {
   dismissCompletion: () => void
   /** 레슨 시작 — key에 해당하는 단계셋을 로드 */
   startLesson: (key: string) => void
+  /** 심화 레슨 정상 완료 — 모든 지표·작도 초기화 후 닫기 */
+  completeLesson: () => void
 
   markStepDone:      () => void
   notifyCandleClick: (data: CandleData) => void
@@ -180,8 +182,18 @@ export const useTutorialStore = create<TutorialState>()(
         })
       },
 
-      skip: () =>
-        set({ isActive: false, hasCompletedOnce: true, currentStep: null, showCompletionScreen: false, isLesson: false, ...INITIAL_ACTION_STATE }),
+      skip: () => {
+        const { isLesson } = get()
+        if (isLesson) {
+          // 레슨 건너뛰기: 기초 과정 완료 처리 안 함 + 지표·작도 초기화
+          const { activeIndicators, toggleIndicator } = useChartStore.getState()
+          activeIndicators.forEach(slug => toggleIndicator(slug))
+          useChartStore.getState().requestClearDrawings()
+          set({ isActive: false, currentStep: null, showCompletionScreen: false, isLesson: false, steps: tutorialSteps, ...INITIAL_ACTION_STATE })
+        } else {
+          set({ isActive: false, hasCompletedOnce: true, currentStep: null, showCompletionScreen: false, isLesson: false, ...INITIAL_ACTION_STATE })
+        }
+      },
 
       reset: () =>
         set({ isActive: false, currentIndex: 0, currentStep: null, showCompletionScreen: false, isLesson: false, ...INITIAL_ACTION_STATE }),
@@ -213,6 +225,21 @@ export const useTutorialStore = create<TutorialState>()(
           steps:                lessonSteps,
           isLesson:             true,
           showCompletionScreen: false,
+          ...INITIAL_ACTION_STATE,
+        })
+      },
+
+      /** 심화 레슨 정상 완료 — 모든 지표·작도 초기화 후 닫기 */
+      completeLesson: () => {
+        const { activeIndicators, toggleIndicator } = useChartStore.getState()
+        activeIndicators.forEach(slug => toggleIndicator(slug))
+        useChartStore.getState().requestClearDrawings()
+        set({
+          isActive:             false,
+          currentStep:          null,
+          showCompletionScreen: false,
+          isLesson:             false,
+          steps:                tutorialSteps,
           ...INITIAL_ACTION_STATE,
         })
       },
