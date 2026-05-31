@@ -64,6 +64,18 @@ export interface TutorialStep {
   floatSide?: 'bottom-right'
 
   /**
+   * 모바일 전용 targetSelector (PC는 기존 targetSelector 사용)
+   * 예: '#mobile-toolbar-analysis', '#mobile-indicator-links'
+   */
+  mobileTargetSelector?: string | null
+
+  /** 모바일 전용 mission 텍스트 (설정 시 기존 mission 대체) */
+  mobileMission?: string
+
+  /** 모바일 전용 tips (설정 시 기존 tips 대체) */
+  mobileTips?: string[]
+
+  /**
    * 피보나치 작도 가이드 — 저점·고점 위치에 펄스 마커 표시
    * ChartContainer 가 priceToCoordinate + timeToCoordinate 로 위치 계산 후
    * HTML 오버레이로 렌더링한다.

@@ -169,6 +169,34 @@ function ChartPageInner() {
           </div>
         </div>
 
+        {/* ── 모바일 전용: 지표 더 알아보기 (가로 스크롤) ──── */}
+        <div id="mobile-indicator-links" className="sm:hidden mt-4">
+          <p className="text-[10px] font-bold tracking-[0.07em] uppercase text-navi-muted mb-2.5">
+            지표 더 알아보기
+          </p>
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {[
+              ['rsi',            'RSI'],
+              ['macd',           'MACD'],
+              ['bollinger',      '볼린저 밴드'],
+              ['moving-average', '이동평균선'],
+              ['trendline',      '추세선'],
+              ['fibonacci',      '피보나치'],
+            ].map(([slug, label]) => (
+              <Link
+                key={slug}
+                href={`/indicator/${slug}`}
+                className="shrink-0 px-3.5 py-2.5 bg-navi-surface border border-navi-border
+                           rounded-xl text-[12px] font-medium text-navi-secondary
+                           hover:border-navi-accent/40 hover:text-navi-text
+                           transition-all duration-150 whitespace-nowrap"
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+        </div>
+
         {/* 지표 설명 링크 — PC 전용 */}
         <div id="indicator-links" className="hidden sm:block mt-5">
           <p className="text-[11px] font-semibold tracking-[0.07em] uppercase text-navi-secondary mb-3">
