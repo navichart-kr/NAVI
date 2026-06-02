@@ -12,7 +12,12 @@ const ADDITIONAL = [
   { key: 'macd-advanced',      label: 'MACD 심화'       },
 ]
 
-export function TutorialMenuButton() {
+interface TutorialMenuButtonProps {
+  /** 'sm' = 헤더용 소형 버튼 (기본) | 'lg' = 콘텐츠 영역용 전체 폭 버튼 */
+  size?: 'sm' | 'lg'
+}
+
+export function TutorialMenuButton({ size = 'sm' }: TutorialMenuButtonProps) {
   const { start, startLesson } = useTutorialStore()
   const router = useRouter()
   const [open, setOpen] = useState(false)
@@ -29,12 +34,14 @@ export function TutorialMenuButton() {
   }, [open])
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className={`relative ${size === 'lg' ? 'w-full' : ''}`}>
       <button
         onClick={() => setOpen(v => !v)}
         className={[
-          'h-7 px-3 text-[11px] font-semibold rounded-lg',
-          'border transition-all duration-150',
+          size === 'lg'
+            ? 'w-full h-11 px-4 text-[13px] rounded-xl'
+            : 'h-7 px-3 text-[11px] rounded-lg',
+          'font-semibold border transition-all duration-150',
           open
             ? 'bg-navi-action/18 border-navi-action/45 text-navi-text'
             : 'bg-navi-action/10 border-navi-action/25 text-navi-text hover:bg-navi-action/18 hover:border-navi-action/45',

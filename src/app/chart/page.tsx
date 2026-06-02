@@ -90,20 +90,22 @@ function ChartPageInner() {
 
           {/* 액션 영역 */}
           <div className="flex items-center gap-2">
-            {/* 실전 챌린지 */}
+            {/* 실전 챌린지 — PC 전용 */}
             <Link
               id="simulate-link"
               href="/simulate"
-              className="flex h-7 px-2 sm:px-3 text-[10px] sm:text-[11px] font-semibold rounded-lg items-center
+              className="hidden sm:flex h-7 px-3 text-[11px] font-semibold rounded-lg items-center
                          text-navi-text border border-navi-border2
                          hover:border-navi-action/40 hover:bg-navi-action/[0.06]
                          transition-all duration-150 whitespace-nowrap"
             >
               실전 챌린지
             </Link>
-            {/* 학습 메뉴 버튼 */}
-            <TutorialMenuButton />
-            {/* 테마 전환 */}
+            {/* 학습 메뉴 버튼 — PC 전용 */}
+            <span className="hidden sm:block">
+              <TutorialMenuButton />
+            </span>
+            {/* 테마 전환 — 항상 표시 */}
             <ThemeToggle />
           </div>
         </div>
@@ -124,16 +126,18 @@ function ChartPageInner() {
           {showMACD && <MACDChart />}
         </div>
 
-        {/* 도구 섹션 — 모바일·PC 공통 */}
-        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* 도구 섹션 — 모바일: 좌우 2열 / PC: 동일 2열 */}
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:gap-3">
           {/* 분석 도구 */}
           <div
             id="analysis-tools-card"
-            className="bg-navi-surface border border-navi-border rounded-xl p-4 overflow-visible"
+            className="bg-navi-surface border border-navi-border rounded-xl p-3 sm:p-4 overflow-visible"
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-bold tracking-[0.07em] uppercase text-navi-muted">분석 도구</span>
-              <span className="text-[11px] text-navi-muted">클릭하면 차트에 표시돼요</span>
+            <div className="mb-2 sm:mb-3">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.07em] uppercase text-navi-muted">
+                분석 도구
+              </span>
+              <p className="hidden sm:block text-[11px] text-navi-muted mt-0.5">클릭하면 차트에 표시돼요</p>
             </div>
             <IndicatorToolbar />
           </div>
@@ -141,22 +145,45 @@ function ChartPageInner() {
           {/* 작도 도구 */}
           <div
             id="drawing-tools-card"
-            className="bg-navi-surface border border-navi-border rounded-xl p-4"
+            className="bg-navi-surface border border-navi-border rounded-xl p-3 sm:p-4"
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-bold tracking-[0.07em] uppercase text-navi-muted">작도 도구</span>
-              <span className="text-[11px] text-navi-muted">차트에 직접 그려봐요</span>
+            <div className="mb-2 sm:mb-3">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.07em] uppercase text-navi-muted">
+                작도 도구
+              </span>
+              <p className="hidden sm:block text-[11px] text-navi-muted mt-0.5">차트에 직접 그려봐요</p>
             </div>
             <DrawingToolbar />
           </div>
         </div>
 
-        {/* ── 모바일 전용: 지표 더 알아보기 (가로 스크롤) ──── */}
+        {/* ── 모바일 전용: 실전 챌린지 + 학습 버튼 ────────────
+            헤더에서 제거된 CTA를 차트 하단에 배치
+        ──────────────────────────────────────────────────── */}
+        <div className="sm:hidden mt-3 grid grid-cols-2 gap-2">
+          <Link
+            id="simulate-link-mobile"
+            href="/simulate"
+            className="flex items-center justify-center h-11 rounded-xl
+                       text-[13px] font-semibold
+                       text-navi-text border border-navi-border2
+                       hover:border-navi-action/40 hover:bg-navi-action/[0.06]
+                       transition-all duration-150"
+          >
+            실전 챌린지
+          </Link>
+          <TutorialMenuButton size="lg" />
+        </div>
+
+        {/* ── 지표 더 알아보기
+            모바일: 2열 그리드 (가로 스크롤 제거)
+            PC    : 3열 그리드
+        ──────────────────────────────────────────────────── */}
         <div id="mobile-indicator-links" className="sm:hidden mt-4">
-          <p className="text-[10px] font-bold tracking-[0.07em] uppercase text-navi-muted mb-2.5">
+          <p className="text-[10px] font-bold tracking-[0.07em] uppercase text-navi-muted mb-2">
             지표 더 알아보기
           </p>
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+          <div className="grid grid-cols-2 gap-2">
             {[
               ['rsi',            'RSI'],
               ['macd',           'MACD'],
@@ -168,10 +195,10 @@ function ChartPageInner() {
               <Link
                 key={slug}
                 href={`/indicator/${slug}`}
-                className="shrink-0 px-3.5 py-2.5 bg-navi-surface border border-navi-border
+                className="px-3 py-2.5 bg-navi-surface border border-navi-border
                            rounded-xl text-[12px] font-medium text-navi-secondary
                            hover:border-navi-accent/40 hover:text-navi-text
-                           transition-all duration-150 whitespace-nowrap"
+                           transition-all duration-150 text-center"
               >
                 {label}
               </Link>
@@ -184,7 +211,7 @@ function ChartPageInner() {
           <p className="text-[11px] font-semibold tracking-[0.07em] uppercase text-navi-secondary mb-3">
             지표 더 알아보기
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+          <div className="grid grid-cols-3 gap-1.5">
             {[
               ['rsi',            'RSI'],
               ['macd',           'MACD'],

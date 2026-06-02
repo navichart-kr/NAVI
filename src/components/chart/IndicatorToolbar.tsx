@@ -53,7 +53,10 @@ export function IndicatorToolbar() {
             >
               {SHORT_LABELS[slug]}
             </button>
-            <ToolTooltip indicator={indicator} visible={hovered === slug} />
+            {/* 툴팁 — PC 전용 (모바일 Hover 없음) */}
+            <div className="hidden sm:block">
+              <ToolTooltip indicator={indicator} visible={hovered === slug} />
+            </div>
           </div>
         )
       })}
