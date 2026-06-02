@@ -66,24 +66,29 @@ export const tutorialSteps: TutorialStep[] = [
     actionRequired:   'judgment',
     judgment: {
       question: '이 구간에서 MA 선들이 어느 방향을 향하나요?',
+      hints: [
+        'MA20(단기, 노란선)과 MA60(장기, 주황선)의 기울기를 봐요',
+        '오른쪽 끝 10봉 기준으로 선이 올라가는지 내려가는지 확인해요',
+        '두 선이 모두 같은 방향일 때 추세가 명확해요',
+      ],
       choices: [
         {
           value:    'up',
           icon:     '↑',
           label:    '위로 향하고 있다',
-          feedback: '맞아요! 이동평균선들이 함께 위를 향하면 상승 추세 신호예요. 단기선(노랑)이 장기선(빨강) 위에 있을수록 강한 상승이에요.',
+          feedback: 'MA 선들이 함께 위를 향하면 상승 추세 신호예요. 단기선(노랑)이 장기선(빨강) 위에 있을수록 상승 힘이 강해요.',
         },
         {
           value:    'sideways',
           icon:     '→',
           label:    '횡보하거나 잘 모르겠다',
-          feedback: '선들이 뒤엉켜 있으면 추세가 불분명한 상태예요. 이럴 땐 RSI, MACD 같은 보조 지표를 함께 봐요.',
+          feedback: 'MA 선들이 방향 없이 뒤엉켜 있으면 추세가 불분명한 상태예요. 이럴 땐 RSI, MACD 같은 보조 지표를 함께 봐요.',
         },
         {
           value:    'down',
           icon:     '↓',
           label:    '아래로 향하고 있다',
-          feedback: '이동평균선이 내려가면 하락 추세 신호예요. 어떤 기간을 보느냐에 따라 다르게 보일 수 있어요.',
+          feedback: 'MA 선들이 함께 아래를 향하면 하락 추세 신호예요. 단기선이 장기선 아래로 내려갈수록 하락 압력이 강해요.',
         },
       ],
     },
@@ -119,24 +124,29 @@ export const tutorialSteps: TutorialStep[] = [
     actionRequired:   'judgment',
     judgment: {
       question: '오른쪽 끝 RSI 선이 어느 구간에 있나요?',
+      hints: [
+        'RSI 그래프에서 보라색 선의 가장 오른쪽 끝 위치를 봐요',
+        '빨간 수평선 = 70 (과열 기준), 초록 수평선 = 30 (침체 기준)',
+        '선이 어느 수평선 근처에 있는지, 또는 그 사이에 있는지 확인해봐요',
+      ],
       choices: [
         {
           value:    'overbought',
           icon:     '↑',
           label:    '70 근처 또는 위 (과열)',
-          feedback: '과매수 구간이에요! 가격이 단기간에 너무 많이 올랐다는 신호예요. 강한 상승장에선 오래 머물기도 해요.',
+          feedback: 'RSI 70 이상은 과매수 구간이에요. 가격이 단기간에 너무 빠르게 올랐다는 신호로, 조정이 올 수 있어요.',
         },
         {
           value:    'neutral',
           icon:     '—',
           label:    '30~70 사이 (중립)',
-          feedback: '중립 구간이에요. MA 추세와 함께 보면 더 명확히 파악할 수 있어요.',
+          feedback: 'RSI 30~70은 중립 구간이에요. 뚜렷한 과열·침체 신호가 없는 상태예요. MA 추세와 함께 보면 방향을 파악할 수 있어요.',
         },
         {
           value:    'oversold',
           icon:     '↓',
           label:    '30 근처 또는 아래 (침체)',
-          feedback: '과매도 구간이에요! 반등 가능성이 있지만, 하락 추세가 강할 땐 계속 떨어지기도 해요.',
+          feedback: 'RSI 30 이하는 과매도 구간이에요. 가격이 너무 빠르게 떨어졌다는 신호로, 반등 가능성이 높아져요.',
         },
       ],
     },
@@ -172,24 +182,29 @@ export const tutorialSteps: TutorialStep[] = [
     actionRequired:   'judgment',
     judgment: {
       question: '오른쪽 끝에서 파란선(MACD)과 주황선(시그널)의 위치가 어때요?',
+      hints: [
+        'MACD 그래프에서 두 선의 오른쪽 끝을 봐요',
+        '히스토그램(막대)이 0선 위면 파란선이 위, 아래면 주황선이 위예요',
+        '두 선이 명확히 떨어져 있는지, 거의 붙어 있는지 확인해봐요',
+      ],
       choices: [
         {
           value:    'macd-above',
           icon:     '↑',
           label:    '파란선이 주황선 위에 있다',
-          feedback: '매수 신호 상태예요! MACD선이 시그널선 위에 있으면 상승 모멘텀이 있다는 뜻이에요.',
+          feedback: 'MACD선이 시그널선 위에 있으면 상승 모멘텀 상태예요. 히스토그램이 0선 위(양수)인지 함께 확인해봐요.',
         },
         {
           value:    'signal-above',
           icon:     '↓',
           label:    '주황선이 파란선 위에 있다',
-          feedback: '하락 압력 상태예요! MACD선이 시그널선 아래에 있으면 하락 모멘텀이 있다는 신호예요.',
+          feedback: '시그널선이 MACD선 위에 있으면 하락 압력 상태예요. 히스토그램이 0선 아래(음수)로 내려와 있어요.',
         },
         {
           value:    'crossing',
           icon:     '≈',
           label:    '거의 비슷한 위치다',
-          feedback: '교차 직전일 수 있어요! 두 선이 가까워지면 추세 전환 가능성이 높아져요.',
+          feedback: '두 선이 거의 같은 위치에 있으면 교차 직전일 수 있어요. 히스토그램 막대가 0선 근처에 있는지 봐요.',
         },
       ],
     },
@@ -225,24 +240,29 @@ export const tutorialSteps: TutorialStep[] = [
     actionRequired:   'judgment',
     judgment: {
       question: '이 구간에서 볼린저 밴드의 간격이 어떻게 보여요?',
+      hints: [
+        '위쪽 밴드와 아래쪽 밴드 사이의 간격을 왼쪽→오른쪽으로 비교해봐요',
+        '간격이 점점 좁아지면 스퀴즈, 넓어지면 확장이에요',
+        '오른쪽 끝 10봉 기준으로 밴드 폭이 어떻게 변했는지 확인해봐요',
+      ],
       choices: [
         {
           value:    'squeeze',
           icon:     '→←',
           label:    '좁아지고 있다',
-          feedback: '밴드 스퀴즈! 곧 위아래 어느 방향으로든 큰 움직임이 올 수 있어요.',
+          feedback: '밴드 스퀴즈! 위아래 밴드가 좁아지면 변동성이 압축된 상태예요. 곧 큰 방향 움직임이 올 수 있어요.',
         },
         {
           value:    'wide',
           icon:     '←→',
           label:    '넓어지고 있다',
-          feedback: '변동성이 확대되는 구간이에요. 강하게 움직이고 있다는 뜻이에요.',
+          feedback: '밴드가 넓어지면 변동성이 확대되는 중이에요. 강한 추세가 이미 진행되고 있다는 신호예요.',
         },
         {
           value:    'unknown',
           icon:     '?',
           label:    '잘 모르겠다',
-          feedback: '가운데 점선(MA20)과 양쪽 선의 간격을 비교해보세요. 평소보다 좁아 보이면 스퀴즈예요.',
+          feedback: '가운데 선(MA20)과 양쪽 밴드의 간격을 시간 흐름에 따라 비교해봐요. 최근이 더 좁아졌는지 넓어졌는지 확인해봐요.',
         },
       ],
     },

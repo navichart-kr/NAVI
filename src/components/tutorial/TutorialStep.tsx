@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useTutorialStore } from '@/stores/tutorialStore'
 import { useChartStore }    from '@/stores/chartStore'
 import { useMobile }        from '@/hooks/useMobile'
-import { calcMA, calcRSI, calcMACD } from '@/lib/indicators'
+import { calcMA, calcRSI, calcMACD, calcBollingerBands } from '@/lib/indicators'
 import type { TutorialStep as TStep, CandleData, IndicatorSlug } from '@/types'
 import { clsx } from 'clsx'
 
@@ -139,6 +139,53 @@ function scoreMACDSignal(c: CandleData[]): 'bullish'|'bearish' {
   return last.macd > (last.signal ?? 0) ? 'bullish' : 'bearish'
 }
 
+/* ── 기초 튜토리얼 judgment 전용 채점 함수 ──────────────────
+   각 함수의 반환값은 tutorialSteps.ts 선지의 value와 1:1 매칭
+─────────────────────────────────────────────────────────── */
+
+/** macd-judgment: 'macd-above' | 'signal-above' | 'crossing'
+ *  두 선의 차이가 절대값 대비 10% 미만이면 교차 판정 */
+function scoreMACDJudgment(c: CandleData[]): 'macd-above' | 'signal-above' | 'crossing' {
+  const data = calcMACD(c).filter(x => x.signal !== null)
+  if (!data.length) return 'crossing'
+  const last    = data[data.length - 1]
+  const diff    = last.macd - (last.signal ?? 0)
+  const absMax  = Math.max(Math.abs(last.macd), Math.abs(last.signal ?? 0), 0.01)
+  if (Math.abs(diff) / absMax < 0.10) return 'crossing'
+  return diff > 0 ? 'macd-above' : 'signal-above'
+}
+
+/** bb-judgment: 'squeeze' | 'wide'
+ *  정규화 밴드폭(= (upper−lower)/middle) 최근 5봉 평균 vs 이전 5봉 평균 비교 */
+function scoreBBSqueeze(c: CandleData[]): 'squeeze' | 'wide' {
+  if (c.length < 25) return 'wide'
+  const { upper, lower, middle } = calcBollingerBands(c, 20, 2)
+  if (upper.length < 10) return 'wide'
+  const bw     = upper.map((u, i) => (u.value - lower[i].value) / (middle[i].value || 1))
+  const n      = bw.length
+  const recent = bw.slice(n - 5).reduce((a, b) => a + b, 0) / 5
+  const prev   = bw.slice(n - 10, n - 5).reduce((a, b) => a + b, 0) / 5
+  return recent < prev ? 'squeeze' : 'wide'
+}
+
+/** 단계 ID + 캔들 슬라이스 → 동적 정답 계산
+ *  기초 튜토리얼 4개 judgment 단계에만 적용; 나머지는 undefined 반환 */
+function computeCorrectValue(
+  stepId:     string,
+  allCandles: CandleData[],
+  focusBars:  number | null,
+): string | undefined {
+  if (!allCandles.length) return undefined
+  const c = focusBars ? allCandles.slice(-focusBars) : allCandles
+  switch (stepId) {
+    case 'ma-judgment':   return scoreTrend(c)
+    case 'rsi-judgment':  return scoreRSI(c)
+    case 'macd-judgment': return scoreMACDJudgment(c)
+    case 'bb-judgment':   return scoreBBSqueeze(c)
+    default:              return undefined
+  }
+}
+
 interface TestQ {
   id: string; label: string; hint: string
   choices: { v: string; icon: string; label: string }[]
@@ -223,12 +270,14 @@ export function TutorialStep() {
   const stepTmr = useRef<ReturnType<typeof setTimeout> | null>(null)
   const rafRef  = useRef<number>(0)
 
-  const [testQIdx,    setTestQIdx]    = useState(0)
-  const [testAnswers, setTestAnswers] = useState<Record<string,string>>({})
-  const [testDone,    setTestDone]    = useState(false)
-  const [wrongCount,  setWrongCount]  = useState(0)
-  const [showWrongFB, setShowWrongFB] = useState(false)
-  const [wrongChoice, setWrongChoice] = useState<string|null>(null)
+  const [testQIdx,       setTestQIdx]       = useState(0)
+  const [testAnswers,    setTestAnswers]    = useState<Record<string,string>>({})
+  const [testDone,       setTestDone]       = useState(false)
+  const [wrongCount,     setWrongCount]     = useState(0)
+  const [showWrongFB,    setShowWrongFB]    = useState(false)
+  const [wrongChoice,    setWrongChoice]    = useState<string|null>(null)
+  /** 기초 튜토리얼 judgment 단계: 실제 데이터로 계산한 동적 정답 */
+  const [computedCorrect, setComputedCorrect] = useState<string | undefined>(undefined)
 
   /* ── Derived mode ───────────────────────────────────── */
   const mode: CardMode =
@@ -390,6 +439,27 @@ export function TutorialStep() {
         !currentStep.indicatorKey || stepDone) return
     if (activeIndicators.has(currentStep.indicatorKey as any)) markStepDone()
   }, [activeIndicators, currentStep, stepDone, markStepDone])
+
+  /* ── judgment 단계 진입 시 → 실제 데이터로 정답 동적 계산 ──
+     hardcoded correctValue가 없는 기초 튜토리얼 4개 단계 전용.
+     chartCandles(NVDA 전체)에서 focusBarsFromEnd만큼 슬라이스해 채점.
+  ────────────────────────────────────────────────────────────── */
+  useEffect(() => {
+    if (
+      !currentStep ||
+      currentStep.actionRequired !== 'judgment' ||
+      currentStep.judgment?.correctValue !== undefined  // 정적 정답 있으면 스킵
+    ) {
+      setComputedCorrect(undefined)
+      return
+    }
+    const cv = computeCorrectValue(
+      currentStep.id,
+      chartCandles,
+      currentStep.focusBarsFromEnd ?? null,
+    )
+    setComputedCorrect(cv)
+  }, [currentStep, chartCandles])
 
   if (!currentStep) return null
 
@@ -616,18 +686,21 @@ export function TutorialStep() {
     </div>
   )
 
-  /* ── 판단 클릭 핸들러 ────────────────────────────────── */
+  /* ── 판단 클릭 핸들러 ──────────────────────────────────
+     effectiveCorrect = 정적 correctValue 우선, 없으면 동적 computedCorrect
+  ─────────────────────────────────────────────────────── */
   function handleJudgmentClick(value: string) {
     if (!currentStep?.judgment) return
-    const { correctValue } = currentStep.judgment
-    if (correctValue !== undefined) {
-      if (value === correctValue) {
+    const effectiveCorrect = currentStep.judgment.correctValue ?? computedCorrect
+    if (effectiveCorrect !== undefined) {
+      if (value === effectiveCorrect) {
         setWrongCount(0); setShowWrongFB(false); setWrongChoice(null)
         notifyJudgment(value)
       } else {
         setWrongCount(c => c + 1); setWrongChoice(value); setShowWrongFB(true)
       }
     } else {
+      // 정답을 알 수 없는 경우(데이터 부족 등) → 어느 선택도 허용
       notifyJudgment(value)
     }
   }
@@ -678,7 +751,10 @@ export function TutorialStep() {
             </button>
             {wrongCount >= 2 && (
               <button
-                onClick={() => { notifyJudgment(currentStep.judgment!.correctValue!); setShowWrongFB(false) }}
+                onClick={() => {
+                  const answer = currentStep.judgment!.correctValue ?? computedCorrect
+                  if (answer) { notifyJudgment(answer); setShowWrongFB(false) }
+                }}
                 className="w-full py-1.5 text-[11px] text-navi-muted hover:text-navi-secondary text-center"
               >
                 정답 보기
@@ -723,9 +799,9 @@ export function TutorialStep() {
       </p>
 
       {currentStep.actionRequired === 'judgment' && currentStep.judgment && chosenJudgment && (() => {
-        const chosen    = currentStep.judgment!.choices.find(c => c.value === chosenJudgment)
-        const isCorrect = currentStep.judgment!.correctValue !== undefined
-                          && chosenJudgment === currentStep.judgment!.correctValue
+        const chosen          = currentStep.judgment!.choices.find(c => c.value === chosenJudgment)
+        const effectiveCorrect = currentStep.judgment!.correctValue ?? computedCorrect
+        const isCorrect        = effectiveCorrect !== undefined && chosenJudgment === effectiveCorrect
         return chosen ? (
           <div className={clsx(
             'rounded-lg p-3',
