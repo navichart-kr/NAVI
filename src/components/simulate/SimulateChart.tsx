@@ -15,6 +15,7 @@ import {
 } from 'lightweight-charts'
 import { calcBollingerBands, calcMA, calcRSI, calcMACD } from '@/lib/indicators'
 import { useLearnStore } from '@/stores/learnStore'
+import { trackEvent, getDeviceType } from '@/lib/analytics'
 import type { CandleData } from '@/types'
 import { clsx } from 'clsx'
 import { useTheme } from '@/hooks/useTheme'
@@ -217,6 +218,13 @@ export function SimulateChart({ pastData, futureData, onRetry }: Props) {
   const setTool    = useCallback((t: DrawTool) => { toolRef.current = t; _setTool(t) }, [])
   const toggleInd  = useCallback((k: string) =>
     setActiveInds(prev => { const s = new Set(prev); s.has(k) ? s.delete(k) : s.add(k); return s }), [])
+
+  /* ── 실전 챌린지 페이지 진입 이벤트 ─────────────────────────── */
+  useEffect(() => {
+    trackEvent('simulation_started', {
+      device_type: getDeviceType(),
+    })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── 작도 도구 활성화 시 차트 스크롤 ────────────────────────── */
   useEffect(() => {
@@ -673,8 +681,34 @@ export function SimulateChart({ pastData, futureData, onRetry }: Props) {
     const startPrice = futureData[0].open
     const endPrice   = futureData[futureData.length - 1].close
     const change     = ((endPrice - startPrice) / startPrice) * 100
-    setResult({ change, startPrice, endPrice, days: futureData.length })
+    const resultData = { change, startPrice, endPrice, days: futureData.length }
+    setResult(resultData)
     markSim()
+
+    // 결과 정답 여부 계산
+    const isRight = (change >= 5 && choice === 'up') || (change <= -5 && choice === 'down') || (change > -5 && change < 5 && choice === 'sideways')
+    const actualChange = Math.round(change * 10) / 10
+
+    // 예측 제출 이벤트
+    trackEvent('challenge_prediction_submitted', {
+      prediction:               choice,
+      active_indicators_count:  activeInds.size,
+    })
+
+    // 결과 공개 이벤트
+    trackEvent('challenge_completed', {
+      prediction:               choice,
+      is_correct:               isRight,
+      actual_change:            actualChange,
+      active_indicators_count:  activeInds.size,
+      future_days:              futureData.length,
+    })
+    trackEvent('simulation_completed', {
+      prediction:               choice,
+      is_correct:               isRight,
+      actual_change:            actualChange,
+      device_type:              getDeviceType(),
+    })
   }, [futureData, pastData, activeInds, markSim])
 
   /* ── 날짜 포맷 ─────────────────────────────────────────────── */
@@ -930,7 +964,10 @@ export function SimulateChart({ pastData, futureData, onRetry }: Props) {
           )}
           <button
             id="challenge-predict-btn"
-            onClick={() => setPhase('predicting')}
+            onClick={() => {
+              trackEvent('challenge_started', { active_indicators_count: activeInds.size })
+              setPhase('predicting')
+            }}
             className="w-full py-3.5 rounded-xl font-semibold text-[13px]
                        bg-navi-action text-white
                        hover:bg-navi-action-hover

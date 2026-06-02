@@ -6,6 +6,7 @@ import { useTutorialStore } from '@/stores/tutorialStore'
 import { useChartStore }    from '@/stores/chartStore'
 import { useMobile }        from '@/hooks/useMobile'
 import { calcMA, calcRSI, calcMACD, calcBollingerBands } from '@/lib/indicators'
+import { trackEvent }       from '@/lib/analytics'
 import type { TutorialStep as TStep, CandleData, IndicatorSlug } from '@/types'
 import { clsx } from 'clsx'
 
@@ -245,12 +246,19 @@ function buildTestQs(c: CandleData[]): TestQ[] {
   ]
 }
 
+/* ── 레슨 키 → 짧은 topic 이름 (이벤트 공용) ────────────── */
+const LESSON_TOPIC: Record<string, string> = {
+  'fibonacci-advanced': 'fibonacci',
+  'rsi-advanced':       'rsi',
+  'macd-advanced':      'macd',
+}
+
 /* ══════════════════════════════════════════════════════════
    TutorialStep
 ══════════════════════════════════════════════════════════ */
 export function TutorialStep() {
   const {
-    currentStep, currentIndex, steps, isLesson,
+    currentStep, currentIndex, steps, isLesson, currentLessonKey,
     stepDone, candleData: clickedCandle, chosenJudgment,
     next, prev, skip, complete, completeLesson, notifyJudgment, markStepDone,
   } = useTutorialStore()
@@ -259,6 +267,35 @@ export function TutorialStep() {
   const isMobile   = useMobile()
   const isMobileRef = useRef(isMobile)
   useEffect(() => { isMobileRef.current = isMobile }, [isMobile])
+
+  /* ── 단계 진입 이벤트 ──────────────────────────────────────
+     · 기초 튜토리얼 : tutorial_step_viewed  { tutorial, step }
+     · 심화 학습     : advanced_step_viewed  { topic, step }
+     currentStep.id 가 바뀔 때만 발송 (스텝 이동 감지)
+  ─────────────────────────────────────────────────────── */
+  useEffect(() => {
+    if (!currentStep) return
+    if (isLesson && currentLessonKey) {
+      /* 심화 학습 단계 진입 */
+      const topic = LESSON_TOPIC[currentLessonKey] ?? currentLessonKey
+      trackEvent('advanced_step_viewed', {
+        topic,
+        step:        currentIndex + 1,
+        step_id:     currentStep.id,
+        total_steps: steps.length,
+      })
+    } else {
+      /* 기초 튜토리얼 단계 진입 */
+      trackEvent('tutorial_step_viewed', {
+        tutorial:        'basic',
+        step:            currentIndex + 1,
+        step_id:         currentStep.id,
+        total_steps:     steps.length,
+        action_required: currentStep.actionRequired ?? 'free',
+      })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep?.id])
 
   /* ── State ──────────────────────────────────────────── */
   const [hl,        setHl]        = useState<HL | null>(null)
@@ -725,12 +762,27 @@ export function TutorialStep() {
 
   /* ── 판단 클릭 핸들러 ──────────────────────────────────
      effectiveCorrect = 정적 correctValue 우선, 없으면 동적 computedCorrect
+     정답·오답 모두 tutorial_judgment_answered 로 기록
+     → "어떤 문제를 가장 많이 틀리는가" 분석 가능
   ─────────────────────────────────────────────────────── */
   function handleJudgmentClick(value: string) {
     if (!currentStep?.judgment) return
     const effectiveCorrect = currentStep.judgment.correctValue ?? computedCorrect
     if (effectiveCorrect !== undefined) {
-      if (value === effectiveCorrect) {
+      const isCorrect = value === effectiveCorrect
+
+      /* ✦ 모든 선택(정답·오답 불문) 기록 */
+      trackEvent('tutorial_judgment_answered', {
+        tutorial:   isLesson && currentLessonKey
+                      ? (LESSON_TOPIC[currentLessonKey] ?? 'lesson')
+                      : 'basic',
+        step_id:    currentStep.id,
+        step:       currentIndex + 1,
+        chosen:     value,
+        is_correct: isCorrect,
+      })
+
+      if (isCorrect) {
         setWrongCount(0); setShowWrongFB(false); setWrongChoice(null)
         notifyJudgment(value)
       } else {
@@ -953,6 +1005,16 @@ export function TutorialStep() {
               onClick={() => {
                 const updated = { ...testAnswers, [q.id]: c.v }
                 setTestAnswers(updated)
+
+                /* ✦ 종합 테스트 문항 답변 기록
+                   q.correct === null 인 prediction 질문은 is_correct: null */
+                trackEvent('comprehensive_test_answered', {
+                  question_index: testQIdx,
+                  question_id:    q.id,
+                  chosen:         c.v,
+                  is_correct:     q.correct !== null ? c.v === q.correct : null,
+                })
+
                 if (testQIdx < questions.length - 1) {
                   setTimeout(() => setTestQIdx(i => i + 1), 260)
                 } else {

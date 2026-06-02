@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTutorialStore } from '@/stores/tutorialStore'
 import { useMobile }        from '@/hooks/useMobile'
+import { trackEvent }       from '@/lib/analytics'
 
 const ADDITIONAL = [
   { key: 'fibonacci-advanced', label: '피보나치 되돌림' },
@@ -125,7 +126,13 @@ export function TutorialMenuButton({ size = 'sm' }: TutorialMenuButtonProps) {
   return (
     <div ref={ref} className={`relative ${size === 'lg' ? 'w-full' : ''}`}>
       {/* 트리거 버튼 */}
-      <button onClick={() => setOpen(v => !v)} className={btnClass}>
+      <button
+        onClick={() => {
+          // 열릴 때만 이벤트 전송 (닫힘 → 열림 전환)
+          if (!open) trackEvent('advanced_learning_opened')
+          setOpen(v => !v)
+        }}
+        className={btnClass}>
         학습
       </button>
 

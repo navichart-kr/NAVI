@@ -16,6 +16,7 @@ import { useTutorialStore }   from '@/stores/tutorialStore'
 import { useChartStore } from '@/stores/chartStore'
 import { useLearnStore } from '@/stores/learnStore'
 import { useStockData } from '@/hooks/useStockData'
+import { trackEvent }   from '@/lib/analytics'
 import Link from 'next/link'
 
 function ChartPageInner() {
@@ -195,6 +196,7 @@ function ChartPageInner() {
               <Link
                 key={slug}
                 href={`/indicator/${slug}`}
+                onClick={() => trackEvent('indicator_learn_more_opened', { indicator: slug })}
                 className="px-3 py-2.5 bg-navi-surface border border-navi-border
                            rounded-xl text-[12px] font-medium text-navi-secondary
                            hover:border-navi-accent/40 hover:text-navi-text
@@ -223,6 +225,7 @@ function ChartPageInner() {
               <Link
                 key={slug}
                 href={`/indicator/${slug}`}
+                onClick={() => trackEvent('indicator_learn_more_opened', { indicator: slug })}
                 className="px-3 py-2.5 bg-navi-surface border border-navi-border
                            rounded-lg text-[12px] font-medium text-navi-secondary
                            hover:border-navi-accent/40 hover:text-navi-text hover:bg-navi-surface2

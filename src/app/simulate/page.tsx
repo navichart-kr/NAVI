@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { SimulateChart }  from '@/components/simulate/SimulateChart'
 import { ChallengeGuide } from '@/components/simulate/ChallengeGuide'
+import { trackEvent }     from '@/lib/analytics'
 import type { CandleData } from '@/types'
 
 /* ─── 구간 설정 ──────────────────────────────────────────────── */
@@ -93,7 +94,12 @@ export default function SimulatePage() {
     if (allData.length === 0) return
     const { past, future } = pickWindow(allData)
     setPast(past); setFuture(future)
-    setAttempt(a => a + 1)
+    setAttempt(a => {
+      const newCount = a + 1
+      /* ✦ 재도전 횟수 기록 — 학습 몰입도 측정 */
+      trackEvent('simulation_retry', { retry_count: newCount })
+      return newCount
+    })
   }, [allData])
 
   /* ── 로딩 / 에러 ─────────────────────────────────────────── */

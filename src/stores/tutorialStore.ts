@@ -5,7 +5,15 @@ import { fibonacciSteps }     from '@/data/lessonSteps/fibonacci'
 import { rsiAdvancedSteps }   from '@/data/lessonSteps/rsiAdvanced'
 import { macdAdvancedSteps }  from '@/data/lessonSteps/macdAdvanced'
 import { useChartStore }      from '@/stores/chartStore'
+import { trackEvent, getDeviceType } from '@/lib/analytics'
 import type { TutorialStep, CandleData } from '@/types'
+
+/** 레슨 키 → 짧은 타입 이름 */
+const LESSON_TYPE: Record<string, string> = {
+  'fibonacci-advanced': 'fibonacci',
+  'rsi-advanced':       'rsi',
+  'macd-advanced':      'macd',
+}
 
 const LESSON_MAP: Record<string, TutorialStep[]> = {
   'fibonacci-advanced': fibonacciSteps,
@@ -34,6 +42,8 @@ interface TutorialState {
   // ── 레슨 모드 ────────────────────────────────────────
   /** true이면 레슨 실행 중 (기초 과정 아님) — 마지막 단계에서 완료 화면 없이 종료 */
   isLesson: boolean
+  /** 현재 실행 중인 레슨 키 ('fibonacci-advanced' | 'rsi-advanced' | 'macd-advanced' | null) */
+  currentLessonKey: string | null
 
   // ── 액션 ──────────────────────────────────────────────
   start:       () => void
@@ -89,14 +99,22 @@ export const useTutorialStore = create<TutorialState>()(
       hasCompletedOnce:     false,
       showCompletionScreen: false,
       isLesson:             false,
+      currentLessonKey:     null,
       steps:                tutorialSteps,
       currentStep:          null,
       ...INITIAL_ACTION_STATE,
 
       start: () => {
         // 튜토리얼 시작 시 활성 지표 전부 초기화, 완료 화면도 닫기
+        const { hasCompletedOnce } = get()
         const { activeIndicators, toggleIndicator } = useChartStore.getState()
         activeIndicators.forEach(slug => toggleIndicator(slug))
+
+        trackEvent('tutorial_started', {
+          has_completed_before: hasCompletedOnce,
+          total_steps:          tutorialSteps.length,
+          device_type:          getDeviceType(),
+        })
 
         set({
           isActive:             true,
@@ -105,13 +123,25 @@ export const useTutorialStore = create<TutorialState>()(
           steps:                tutorialSteps,
           showCompletionScreen: false,
           isLesson:             false,
+          currentLessonKey:     null,
           ...INITIAL_ACTION_STATE,
         })
       },
 
       next: () => {
-        const { currentIndex, steps } = get()
+        const { currentIndex, steps, isLesson, currentLessonKey } = get()
         const nextIndex = currentIndex + 1
+
+        // 단계 완료 이벤트 — 현재 단계(currentIndex)가 완료됨
+        const stepNumber = currentIndex + 1
+        if (isLesson && currentLessonKey) {
+          const lessonType = LESSON_TYPE[currentLessonKey]
+          if (lessonType) {
+            trackEvent('tutorial_step_completed', { step_number: stepNumber, lesson_type: lessonType })
+          }
+        } else {
+          trackEvent('tutorial_step_completed', { step_number: stepNumber, tutorial_type: 'basic' })
+        }
 
         if (nextIndex >= steps.length) {
           set({ isActive: false, hasCompletedOnce: true, currentStep: null, ...INITIAL_ACTION_STATE })
@@ -183,15 +213,22 @@ export const useTutorialStore = create<TutorialState>()(
       },
 
       skip: () => {
-        const { isLesson } = get()
+        const { isLesson, currentLessonKey, currentIndex } = get()
         if (isLesson) {
+          // 레슨 이탈
+          const lessonType = currentLessonKey ? LESSON_TYPE[currentLessonKey] : undefined
+          trackEvent('tutorial_exit', {
+            tutorial_type: lessonType ?? 'lesson',
+            step_number:   currentIndex + 1,
+          })
           // 레슨 건너뛰기: 기초 과정 완료 처리 안 함 + 지표·작도 초기화
           const { activeIndicators, toggleIndicator } = useChartStore.getState()
           activeIndicators.forEach(slug => toggleIndicator(slug))
           useChartStore.getState().requestClearDrawings()
-          set({ isActive: false, currentStep: null, showCompletionScreen: false, isLesson: false, steps: tutorialSteps, ...INITIAL_ACTION_STATE })
+          set({ isActive: false, currentStep: null, showCompletionScreen: false, isLesson: false, currentLessonKey: null, steps: tutorialSteps, ...INITIAL_ACTION_STATE })
         } else {
-          set({ isActive: false, hasCompletedOnce: true, currentStep: null, showCompletionScreen: false, isLesson: false, ...INITIAL_ACTION_STATE })
+          trackEvent('tutorial_exit', { tutorial_type: 'basic', step_number: currentIndex + 1 })
+          set({ isActive: false, hasCompletedOnce: true, currentStep: null, showCompletionScreen: false, isLesson: false, currentLessonKey: null, ...INITIAL_ACTION_STATE })
         }
       },
 
@@ -199,16 +236,24 @@ export const useTutorialStore = create<TutorialState>()(
         set({ isActive: false, currentIndex: 0, currentStep: null, showCompletionScreen: false, isLesson: false, ...INITIAL_ACTION_STATE }),
 
       /** 기초 과정 마지막 단계 완료 — 완료 화면 표시 */
-      complete: () =>
+      complete: () => {
+        const { currentIndex, steps } = get()
+        trackEvent('tutorial_step_completed', { step_number: currentIndex + 1, tutorial_type: 'basic' })
+        trackEvent('tutorial_completed', {
+          total_steps:  steps.length,
+          device_type:  getDeviceType(),
+        })
         set({
           isActive:             false,
           hasCompletedOnce:     true,
           currentStep:          null,
           showCompletionScreen: true,
           isLesson:             false,
+          currentLessonKey:     null,
           steps:                tutorialSteps,
           ...INITIAL_ACTION_STATE,
-        }),
+        })
+      },
 
       dismissCompletion: () => set({ showCompletionScreen: false }),
 
@@ -218,12 +263,24 @@ export const useTutorialStore = create<TutorialState>()(
         if (!lessonSteps?.length) return
         const { activeIndicators, toggleIndicator } = useChartStore.getState()
         activeIndicators.forEach(slug => toggleIndicator(slug))
+
+        // 레슨 시작 이벤트
+        const lessonType = LESSON_TYPE[key]
+        if (lessonType) {
+          trackEvent(`advanced_${lessonType}_started`, {
+            lesson_type:  lessonType,
+            total_steps:  lessonSteps.length,
+            device_type:  getDeviceType(),
+          })
+        }
+
         set({
           isActive:             true,
           currentIndex:         0,
           currentStep:          lessonSteps[0],
           steps:                lessonSteps,
           isLesson:             true,
+          currentLessonKey:     key,
           showCompletionScreen: false,
           ...INITIAL_ACTION_STATE,
         })
@@ -231,6 +288,20 @@ export const useTutorialStore = create<TutorialState>()(
 
       /** 심화 레슨 정상 완료 — 모든 지표·작도 초기화 후 닫기 */
       completeLesson: () => {
+        const { currentLessonKey, currentIndex } = get()
+        const lessonType = currentLessonKey ? LESSON_TYPE[currentLessonKey] : undefined
+
+        // 레슨 완료 이벤트
+        if (lessonType) {
+          const { steps } = get()
+          trackEvent('tutorial_step_completed', { step_number: currentIndex + 1, lesson_type: lessonType })
+          trackEvent(`advanced_${lessonType}_completed`, {
+            lesson_type:  lessonType,
+            total_steps:  steps.length,
+            device_type:  getDeviceType(),
+          })
+        }
+
         const { activeIndicators, toggleIndicator } = useChartStore.getState()
         activeIndicators.forEach(slug => toggleIndicator(slug))
         useChartStore.getState().requestClearDrawings()
@@ -239,6 +310,7 @@ export const useTutorialStore = create<TutorialState>()(
           currentStep:          null,
           showCompletionScreen: false,
           isLesson:             false,
+          currentLessonKey:     null,
           steps:                tutorialSteps,
           ...INITIAL_ACTION_STATE,
         })

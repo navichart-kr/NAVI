@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { clsx } from 'clsx'
 import { useChartStore, type DrawingTool } from '@/stores/chartStore'
+import { trackEvent } from '@/lib/analytics'
 
 const TOOLS: { value: DrawingTool; label: string; icon: string; desc: string }[] = [
   { value: 'trendline', label: '추세선',   icon: '↗', desc: '저점·저점 또는 고점·고점을 이어 방향을 표시해요' },
@@ -45,7 +46,11 @@ export function DrawingToolbar() {
           return (
             <div key={tool.value} className="relative group">
               <button
-                onClick={() => setDrawingTool(active ? 'none' : tool.value)}
+                onClick={() => {
+                  // 비활성 → 활성 전환 시에만 이벤트 전송
+                  if (!active) trackEvent('drawing_tool_used', { tool: tool.value })
+                  setDrawingTool(active ? 'none' : tool.value)
+                }}
                 className={clsx(
                   'flex items-center justify-center gap-2 w-full sm:w-auto',
                   'px-3 h-10 sm:h-auto sm:py-2 rounded-xl text-xs font-semibold',

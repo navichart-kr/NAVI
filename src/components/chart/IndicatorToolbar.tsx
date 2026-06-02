@@ -5,6 +5,7 @@ import { clsx } from 'clsx'
 import { ToolTooltip } from './ToolTooltip'
 import { useChartStore } from '@/stores/chartStore'
 import { indicators } from '@/data/indicators'
+import { trackEvent } from '@/lib/analytics'
 import type { IndicatorSlug } from '@/types'
 
 const ANALYSIS_TOOLS: IndicatorSlug[] = [
@@ -41,7 +42,11 @@ export function IndicatorToolbar() {
             onMouseLeave={() => setHovered(null)}
           >
             <button
-              onClick={() => toggleIndicator(slug)}
+              onClick={() => {
+                // 비활성 → 활성 전환 시에만 이벤트 전송
+                if (!isActive) trackEvent('indicator_enabled', { indicator: SHORT_LABELS[slug] ?? slug })
+                toggleIndicator(slug)
+              }}
               className={clsx(
                 /* 모바일: 전체 너비 + 큰 터치 타깃 / PC: 기존 */
                 'w-full sm:w-auto h-10 sm:h-8 px-3.5 rounded-lg text-[13px] sm:text-[12px] font-semibold tracking-wide',
