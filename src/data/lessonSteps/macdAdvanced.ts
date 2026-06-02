@@ -9,10 +9,11 @@ export const macdAdvancedSteps: TutorialStep[] = [
 
   // ── STEP 1  MACD 활성화 ────────────────────────────────
   {
-    id:                     'macd-adv-activate',
-    targetSelector:         '#btn-macd',
-    position:               'top',
-    clearIndicatorsOnEnter: ['moving-average', 'bollinger', 'rsi'],
+    id:                        'macd-adv-activate',
+    targetSelector:            '#btn-macd',
+    completionTargetSelector:  '#macd-chart',
+    position:                  'top',
+    clearIndicatorsOnEnter:    ['moving-average', 'bollinger', 'rsi'],
     title:                  'MACD 심화 — 교차 신호를 찾아봐요',
     body:                   '기초에서 파란선(MACD)과 주황선(시그널)의 교차를 배웠어요.\n\n이번엔 실제 차트에서 교차가 발생한 위치를 직접 찾고, 히스토그램의 의미를 판단해봐요.',
     mission:                'MACD 버튼을 켜봐요',

@@ -9,10 +9,11 @@ export const rsiAdvancedSteps: TutorialStep[] = [
 
   // ── STEP 1  RSI 활성화 ─────────────────────────────────
   {
-    id:                      'rsi-adv-activate',
-    targetSelector:          '#btn-rsi',
-    position:                'top',
-    clearIndicatorsOnEnter:  ['moving-average', 'bollinger', 'macd'],
+    id:                        'rsi-adv-activate',
+    targetSelector:            '#btn-rsi',
+    completionTargetSelector:  '#rsi-chart',
+    position:                  'top',
+    clearIndicatorsOnEnter:    ['moving-average', 'bollinger', 'macd'],
     title:                   'RSI 심화 — 과매수·과매도를 읽어봐요',
     body:                    '기초에서 배운 RSI 70/30 룰을 실제 차트에 적용해봐요.\n\n숫자를 외우는 게 아니라 — RSI가 이 구간에 있을 때 무슨 의미인지 직접 판단해봐요.',
     mission:                 'RSI 버튼을 켜봐요',
@@ -107,6 +108,8 @@ export const rsiAdvancedSteps: TutorialStep[] = [
   {
     id:                        'rsi-adv-combine',
     targetSelector:            '#btn-moving-average',
+    mobileTargetSelector:      '#chart-area',
+    completionTargetSelector:  '#chart-area',
     position:                  'top',
     activateIndicatorsOnEnter: ['moving-average'],
     title:                     'RSI + MA 함께 보기',

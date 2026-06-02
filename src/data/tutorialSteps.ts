@@ -22,6 +22,7 @@ export const tutorialSteps: TutorialStep[] = [
   {
     id:                   'trendline-intro',
     targetSelector:       '#drawing-tools-card',
+    mobileTargetSelector: '#drawing-toolbar',
     position:             'left',
     clearDrawingsOnEnter: true,
     title:                '추세선 — 방향을 눈으로 그어봐요',
@@ -39,9 +40,10 @@ export const tutorialSteps: TutorialStep[] = [
   // STEP 3  이동평균선(MA) 켜기
   // ══════════════════════════════════════════════════════════
   {
-    id:             'ma-toggle',
-    targetSelector: '#btn-moving-average',
-    position:       'top',
+    id:                        'ma-toggle',
+    targetSelector:            '#btn-moving-average',
+    completionTargetSelector:  '#chart-area',
+    position:                  'top',
     clearDrawingsOnEnter: true,
     title:          '이동평균선(MA) — 방향을 선으로 확인해요',
     body:           'MA는 "최근 N일 평균 가격"을 이은 선이에요. 방금 직접 그어본 추세선처럼, MA도 가격의 방향을 보여줘요.\n\n차이가 있다면 — MA는 자동으로 계산돼서 흔들림 없이 추세를 보여줘요.',
@@ -91,10 +93,11 @@ export const tutorialSteps: TutorialStep[] = [
   // STEP 5  RSI 켜기 (MA 자동 OFF)
   // ══════════════════════════════════════════════════════════
   {
-    id:                      'rsi-toggle',
-    targetSelector:          '#btn-rsi',
-    position:                'top',
-    clearIndicatorsOnEnter:  ['moving-average'],
+    id:                        'rsi-toggle',
+    targetSelector:            '#btn-rsi',
+    completionTargetSelector:  '#rsi-chart',
+    position:                  'top',
+    clearIndicatorsOnEnter:    ['moving-average'],
     title:                   'RSI — "지금 과열인가요?"',
     body:                    'RSI는 0~100 사이 숫자로 주가가 얼마나 빠르게 움직이는지 보여줘요.\n\n• 70 이상 → 과매수 → 조정 가능성\n• 30 이하 → 과매도 → 반등 가능성\n• 50 기준으로 강세/약세 구분',
     mission:                 '아래 분석 도구에서 RSI 버튼을 켜보세요 — 차트 아래에 새 그래프가 나타나요',
@@ -143,10 +146,11 @@ export const tutorialSteps: TutorialStep[] = [
   // STEP 7  MACD 켜기 (RSI 자동 OFF)
   // ══════════════════════════════════════════════════════════
   {
-    id:                      'macd-toggle',
-    targetSelector:          '#btn-macd',
-    position:                'top',
-    clearIndicatorsOnEnter:  ['rsi'],
+    id:                        'macd-toggle',
+    targetSelector:            '#btn-macd',
+    completionTargetSelector:  '#macd-chart',
+    position:                  'top',
+    clearIndicatorsOnEnter:    ['rsi'],
     title:                   'MACD — "추세가 바뀌려나?"',
     body:                    'MACD는 두 이동평균선의 차이로 추세 전환 시점을 포착해요.\n\n• 파란선(MACD)이 주황선(시그널)을 위로 교차 → 매수 신호\n• 파란선이 주황선을 아래로 교차 → 매도 신호',
     mission:                 '아래 분석 도구에서 MACD 버튼을 켜보세요 — 새 히스토그램이 나타나요',
@@ -195,10 +199,11 @@ export const tutorialSteps: TutorialStep[] = [
   // STEP 9  볼린저 밴드 켜기 (MACD 자동 OFF)
   // ══════════════════════════════════════════════════════════
   {
-    id:                      'bb-toggle',
-    targetSelector:          '#btn-bollinger',
-    position:                'top',
-    clearIndicatorsOnEnter:  ['macd'],
+    id:                        'bb-toggle',
+    targetSelector:            '#btn-bollinger',
+    completionTargetSelector:  '#chart-area',
+    position:                  'top',
+    clearIndicatorsOnEnter:    ['macd'],
     title:                   '볼린저 밴드(BB) — 변동성을 한눈에',
     body:                    'BB는 주가 위아래로 두 개의 밴드를 그려요. 밴드 간격이 좁아지면 곧 큰 움직임이 올 수 있다는 신호예요.\n\n• 상단 밴드 돌파 → 강한 상승 or 과매수\n• 하단 밴드 이탈 → 강한 하락 or 과매도',
     mission:                 '아래 분석 도구에서 BB 버튼을 클릭해보세요',
@@ -249,6 +254,7 @@ export const tutorialSteps: TutorialStep[] = [
   {
     id:                     'fibonacci-intro',
     targetSelector:         '#drawing-tools-card',
+    mobileTargetSelector:   '#drawing-toolbar',
     position:               'left',
     clearIndicatorsOnEnter: ['bollinger'],
     clearDrawingsOnEnter:   true,

@@ -69,6 +69,15 @@ export interface TutorialStep {
    */
   mobileTargetSelector?: string | null
 
+  /**
+   * 단계 완료(지표 토글/판단 후 피드백 모드) 시 spotlight을 이동할 selector
+   * 예: indicator-toggle 후 차트 영역으로 이동
+   */
+  completionTargetSelector?: string
+
+  /** 모바일에서 단계 완료 시 spotlight selector (미설정 시 completionTargetSelector 사용) */
+  mobileCompletionTargetSelector?: string
+
   /** 모바일 전용 mission 텍스트 (설정 시 기존 mission 대체) */
   mobileMission?: string
 

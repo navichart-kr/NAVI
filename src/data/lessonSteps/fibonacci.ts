@@ -17,6 +17,7 @@ export const fibonacciSteps: TutorialStep[] = [
   {
     id:                     'fib-adv-intro',
     targetSelector:         '#drawing-tools-card',
+    mobileTargetSelector:   '#drawing-toolbar',
     position:               'left',
     clearIndicatorsOnEnter: ['rsi', 'macd', 'bollinger', 'moving-average'],
     clearDrawingsOnEnter:   true,
@@ -42,6 +43,7 @@ export const fibonacciSteps: TutorialStep[] = [
   {
     id:                   'fib-adv-draw',
     targetSelector:       '#drawing-tools-card',
+    mobileTargetSelector: '#drawing-toolbar',
     position:             'top',
     floatSide:            'bottom-right',   // 차트 & 마커 가림 방지
     focusBarsFromEnd:     55,

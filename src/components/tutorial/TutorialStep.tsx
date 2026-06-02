@@ -234,10 +234,25 @@ export function TutorialStep() {
     ? currentStep.mobileTips
     : currentStep?.tips
 
-  /* ── 대상 요소 selector (모바일 우선) ───────────────── */
-  const activeSelector = (isMobile && currentStep?.mobileTargetSelector !== undefined)
-    ? currentStep.mobileTargetSelector
-    : currentStep?.targetSelector
+  /* ── 대상 요소 selector ─────────────────────────────
+     피드백 모드(stepDone=true)에서는 completionTargetSelector 우선 사용
+     → 지표 토글 후 "버튼"이 아닌 "차트"를 spotlight
+  ─────────────────────────────────────────────────── */
+  const activeSelector = (() => {
+    if (!currentStep) return undefined
+    if (stepDone) {
+      // 완료 후: 모바일 completion selector → PC completion selector → 기본 selector
+      const mobCompl = currentStep.mobileCompletionTargetSelector
+      const compl    = currentStep.completionTargetSelector
+      if (isMobile && mobCompl !== undefined) return mobCompl
+      if (compl) return compl
+    }
+    // 일반: 모바일 selector 우선
+    if (isMobile && currentStep.mobileTargetSelector !== undefined) {
+      return currentStep.mobileTargetSelector
+    }
+    return currentStep.targetSelector
+  })()
 
   /* ── Spotlight 계산 ─────────────────────────────────── */
   const computeHL = useCallback(() => {
@@ -299,6 +314,26 @@ export function TutorialStep() {
     return () => { if (stepTmr.current) clearTimeout(stepTmr.current) }
   }, [currentStep]) // eslint-disable-line
 
+  /* ── 단계 완료 시 → completion target으로 스크롤 ────── */
+  useEffect(() => {
+    if (!stepDone || !currentStep) return
+    const sel = (() => {
+      if (isMobileRef.current) {
+        const mob = currentStep.mobileCompletionTargetSelector
+        if (mob !== undefined) return mob
+      }
+      return currentStep.completionTargetSelector
+    })()
+    if (!sel) return
+    // completionTargetSelector를 target으로 한 가상 step으로 스크롤
+    setTimeout(() => {
+      smartScroll(
+        { ...currentStep, targetSelector: sel, mobileTargetSelector: sel },
+        isMobileRef.current
+      )
+    }, 80)
+  }, [stepDone]) // eslint-disable-line react-hooks/exhaustive-deps
+
   /* ── 카드 마운트 후 위치 계산 (PC) ──────────────────── */
   useEffect(() => {
     if (!showCard) return
@@ -340,7 +375,7 @@ export function TutorialStep() {
 
   /* ════ 공통 서브-컴포넌트 ════════════════════════════ */
 
-  /* 진행 바 (모바일: 얇은 선 형태) */
+  /* 진행 바 + 나가기 버튼 (모바일) */
   const mobileProg = (
     <div className="flex items-center gap-2 px-4 pt-2.5 pb-1.5">
       {/* 얇은 프로그레스 바 */}
@@ -356,6 +391,18 @@ export function TutorialStep() {
       <span className="text-[10px] tabular-nums text-quiet-45 shrink-0">
         {currentIndex + 1}/{steps.length}
       </span>
+      {/* ✕ 나가기 버튼 */}
+      <button
+        onClick={skip}
+        aria-label="학습 나가기"
+        className="ml-0.5 w-6 h-6 flex items-center justify-center rounded-full
+                   bg-navi-surface3 border border-navi-border2
+                   text-[11px] text-navi-muted
+                   hover:bg-navi-surface2 hover:text-navi-text
+                   transition-all active:scale-90"
+      >
+        ✕
+      </button>
     </div>
   )
 
