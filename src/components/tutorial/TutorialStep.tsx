@@ -299,19 +299,32 @@ export function TutorialStep() {
     ? currentStep.mobileTips
     : currentStep?.tips
 
+  /* ── 종합 테스트: 질문 인덱스별 spotlight 대상 매핑 ── */
+  const COMPREHENSIVE_SELECTORS = ['#chart-area', '#rsi-chart', '#macd-chart', '#chart-area'] as const
+
   /* ── 대상 요소 selector ─────────────────────────────
-     피드백 모드(stepDone=true)에서는 completionTargetSelector 우선 사용
-     → 지표 토글 후 "버튼"이 아닌 "차트"를 spotlight
+     우선순위:
+     1. comprehensive-test 진행 중 → 질문 인덱스별 매핑
+     2. stepDone(피드백) → completionTargetSelector
+     3. 모바일 → mobileTargetSelector
+     4. 기본  → targetSelector
   ─────────────────────────────────────────────────── */
   const activeSelector = (() => {
     if (!currentStep) return undefined
+
+    // 종합 테스트 진행 중(미완료) → 질문에 맞는 차트를 spotlight
+    if (currentStep.actionRequired === 'comprehensive-test' && !testDone) {
+      return COMPREHENSIVE_SELECTORS[testQIdx] ?? '#chart-area'
+    }
+
+    // 완료 후: completionTargetSelector 우선
     if (stepDone) {
-      // 완료 후: 모바일 completion selector → PC completion selector → 기본 selector
       const mobCompl = currentStep.mobileCompletionTargetSelector
       const compl    = currentStep.completionTargetSelector
       if (isMobile && mobCompl !== undefined) return mobCompl
       if (compl) return compl
     }
+
     // 일반: 모바일 selector 우선
     if (isMobile && currentStep.mobileTargetSelector !== undefined) {
       return currentStep.mobileTargetSelector
@@ -409,6 +422,30 @@ export function TutorialStep() {
       )
     }, 200)  // 초기 대기 200ms (지표 차트 렌더링 시간)
   }, [stepDone]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* ── 종합 테스트 질문 전환 시 → 해당 차트로 자동 스크롤 ─
+     trend(0) → #chart-area / rsi(1) → #rsi-chart /
+     macd(2)  → #macd-chart / prediction(3) → #chart-area
+  ────────────────────────────────────────────────────────── */
+  useEffect(() => {
+    if (
+      !currentStep ||
+      currentStep.actionRequired !== 'comprehensive-test' ||
+      testDone ||
+      !showCard
+    ) return
+    const sel = COMPREHENSIVE_SELECTORS[testQIdx] ?? '#chart-area'
+    // 260ms 전환 애니메이션 이후 스크롤 (testContent의 setTimeout 260ms와 맞춤)
+    setTimeout(() => {
+      scrollToSel(
+        sel,
+        { ...currentStep, targetSelector: sel, mobileTargetSelector: sel } as TStep,
+        isMobileRef.current,
+        4,
+        110,
+      )
+    }, 120)
+  }, [testQIdx]) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── 카드 마운트 후 위치 계산 (PC) ──────────────────── */
   useEffect(() => {
