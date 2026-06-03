@@ -13,6 +13,8 @@ const NAV_ITEMS = [
   { label: '챌린지',   href: '#challenge'  },
   { label: '재도전',   href: '#retry'      },
   { label: '지표활용', href: '#indicators' },
+  { label: '캔들학습', href: '#candle'     },
+  { label: '거래량',   href: '#volume'     },
   { label: '로그',     href: '#log'        },
 ]
 

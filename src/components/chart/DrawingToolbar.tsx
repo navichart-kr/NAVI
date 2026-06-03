@@ -5,9 +5,9 @@ import { clsx } from 'clsx'
 import { useChartStore, type DrawingTool } from '@/stores/chartStore'
 import { trackEvent } from '@/lib/analytics'
 
-const TOOLS: { value: DrawingTool; label: string; icon: string; desc: string }[] = [
-  { value: 'trendline', label: '추세선',   icon: '↗', desc: '저점·저점 또는 고점·고점을 이어 방향을 표시해요' },
-  { value: 'fibonacci', label: '피보나치', icon: '𝚽', desc: '고점→저점 클릭 시 되돌림 구간이 자동 표시돼요' },
+const TOOLS: { value: DrawingTool; label: string; desc: string }[] = [
+  { value: 'trendline', label: '추세선',   desc: '저점·저점 또는 고점·고점을 이어 방향을 표시해요' },
+  { value: 'fibonacci', label: '피보나치', desc: '고점→저점 클릭 시 되돌림 구간이 자동 표시돼요' },
 ]
 
 const GUIDE: Record<string, [string, string]> = {
@@ -60,10 +60,6 @@ export function DrawingToolbar() {
                     : 'bg-navi-surface border-navi-border text-navi-muted hover:border-navi-border2 hover:text-navi-text'
                 )}
               >
-                {/* 아이콘: PC에서만 표시 */}
-                <span className={clsx('text-sm leading-none hidden sm:inline', active && 'animate-pulse')}>
-                  {tool.icon}
-                </span>
                 {tool.label}
                 {active && <span className="w-1.5 h-1.5 rounded-full bg-amber-400/70 animate-pulse" />}
               </button>
@@ -86,12 +82,11 @@ export function DrawingToolbar() {
         {/* 지우기 — 모바일: 2열 전체 폭 / PC: 일반 너비 */}
         <button
           onClick={() => setDrawingTool('erase')}
-          className="col-span-2 flex items-center justify-center gap-1.5 px-3 h-10 sm:h-auto sm:py-2 rounded-xl text-xs
+          className="col-span-2 flex items-center justify-center px-3 h-10 sm:h-auto sm:py-2 rounded-xl text-xs
                      border border-navi-border text-navi-muted
                      hover:border-navi-border2 hover:text-navi-text transition-all
                      w-full sm:w-auto"
         >
-          <span className="hidden sm:inline">✕</span>
           지우기
         </button>
       </div>

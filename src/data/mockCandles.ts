@@ -12,18 +12,19 @@ function makeRng(seed: number) {
 // NVDA 2023년 실제 흐름을 모사한 목 데이터
 // $150 → $495 강한 상승 추세 + 중간 조정 구간
 function generateNVDALike(): CandleData[] {
-  const rng = makeRng(20230102)
+  const rng    = makeRng(20230102)
+  const volRng = makeRng(20230103)  // 거래량 전용 별도 시드
   const data: CandleData[] = []
 
-  // 구간별 추세 설정
+  // 구간별 추세 설정 (baseVol: 일 평균 거래량 백만 단위)
   const phases = [
-    { days: 40, drift:  2.5, vol: 4.0 },  // 1월~2월 완만한 상승
-    { days: 20, drift: -1.5, vol: 5.0 },  // 3월 초 조정
-    { days: 60, drift:  5.0, vol: 6.0 },  // 3월말~6월 AI 급등
-    { days: 15, drift: -2.0, vol: 6.0 },  // 6월 조정
-    { days: 50, drift:  2.0, vol: 4.5 },  // 7월~9월 횡보 후 재상승
-    { days: 20, drift: -3.0, vol: 5.5 },  // 10월 조정
-    { days: 55, drift:  3.5, vol: 5.0 },  // 11월~1월 연말 랠리
+    { days: 40, drift:  2.5, vol: 4.0, baseVol: 40 },  // 1월~2월 완만한 상승
+    { days: 20, drift: -1.5, vol: 5.0, baseVol: 55 },  // 3월 초 조정 (거래량↑)
+    { days: 60, drift:  5.0, vol: 6.0, baseVol: 80 },  // 3월말~6월 AI 급등 (거래량 폭증)
+    { days: 15, drift: -2.0, vol: 6.0, baseVol: 70 },  // 6월 조정
+    { days: 50, drift:  2.0, vol: 4.5, baseVol: 45 },  // 7월~9월 횡보 후 재상승
+    { days: 20, drift: -3.0, vol: 5.5, baseVol: 60 },  // 10월 조정
+    { days: 55, drift:  3.5, vol: 5.0, baseVol: 50 },  // 11월~1월 연말 랠리
   ]
 
   let price = 150
@@ -47,12 +48,18 @@ function generateNVDALike(): CandleData[] {
       const low  = Math.round((Math.min(open, close) - rng() * phase.vol * 0.8) * 100) / 100
       price = close
 
+      // 거래량: 기본 + 가격 변동폭에 비례 + 무작위
+      const priceMove = Math.abs(close - open) / open
+      const volMultiplier = 1 + priceMove * 8 + (volRng() - 0.3) * 0.8
+      const volume = Math.round(phase.baseVol * volMultiplier * 1_000_000)
+
       data.push({
         time:  d.toISOString().split('T')[0],
         open,
         high,
         low,
         close,
+        volume,
       })
     }
   }
@@ -78,10 +85,11 @@ export function toWeekly(daily: CandleData[]): CandleData[] {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([time, cs]) => ({
       time,
-      open:  cs[0].open,
-      high:  Math.max(...cs.map((c) => c.high)),
-      low:   Math.min(...cs.map((c) => c.low)),
-      close: cs[cs.length - 1].close,
+      open:   cs[0].open,
+      high:   Math.max(...cs.map((c) => c.high)),
+      low:    Math.min(...cs.map((c) => c.low)),
+      close:  cs[cs.length - 1].close,
+      volume: cs.reduce((s, c) => s + (c.volume ?? 0), 0) || undefined,
     }))
 }
 
@@ -97,10 +105,11 @@ export function toMonthly(daily: CandleData[]): CandleData[] {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([time, cs]) => ({
       time,
-      open:  cs[0].open,
-      high:  Math.max(...cs.map((c) => c.high)),
-      low:   Math.min(...cs.map((c) => c.low)),
-      close: cs[cs.length - 1].close,
+      open:   cs[0].open,
+      high:   Math.max(...cs.map((c) => c.high)),
+      low:    Math.min(...cs.map((c) => c.low)),
+      close:  cs[cs.length - 1].close,
+      volume: cs.reduce((s, c) => s + (c.volume ?? 0), 0) || undefined,
     }))
 }
 

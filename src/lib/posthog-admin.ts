@@ -67,7 +67,11 @@ export async function fetchEventCounts() {
       'simulation_started','simulation_completed','simulation_retry',
       'indicator_enabled','drawing_tool_used',
       'landing_cta_clicked',
-      'indicator_learn_more_opened','indicator_page_viewed','indicator_cta_clicked'
+      'indicator_learn_more_opened','indicator_page_viewed','indicator_cta_clicked',
+      'candle_learning_started','candle_pattern_viewed',
+      'candle_prediction_answered','candle_learning_completed',
+      'volume_learning_started','volume_learning_step_viewed',
+      'volume_prediction_answered','volume_learning_completed'
     )
       AND timestamp >= now() - interval 30 day
     GROUP BY event
@@ -309,6 +313,68 @@ export async function fetchRecentEvents(limit = 100) {
       uid:   (uid ?? '').slice(0, 8),
       props: [step, indicator, tool, tutorial, is_correct].filter(Boolean).join(', '),
     }))
+}
+
+/* ─── 캔들 패턴 학습 분석 ─────────────────────────────── */
+
+/** 패턴별 시작/완료 수 + 정답률 */
+export async function fetchCandleLearningStats() {
+  const rows = await hogql(`
+    SELECT
+      properties.pattern_type                                      AS pattern,
+      countIf(event = 'candle_learning_started')                   AS started,
+      countIf(event = 'candle_learning_completed')                 AS completed,
+      countIf(event = 'candle_prediction_answered' AND properties.is_correct = true)  AS correct,
+      countIf(event = 'candle_prediction_answered')                AS answered
+    FROM events
+    WHERE event IN (
+      'candle_learning_started','candle_learning_completed','candle_prediction_answered'
+    )
+      AND timestamp >= now() - interval 30 day
+    GROUP BY pattern
+    ORDER BY started DESC
+  `)
+  if (!rows) return null
+  return (rows as [string, number, number, number, number][]).map(
+    ([pattern, started, completed, correct, answered]) => ({
+      pattern:   pattern   ?? '',
+      started:   started   ?? 0,
+      completed: completed ?? 0,
+      completeRate: started > 0 ? Math.round((completed / started) * 100) : 0,
+      accuracy:     answered > 0 ? Math.round((correct  / answered) * 100) : 0,
+    })
+  )
+}
+
+/* ─── 거래량 학습 분석 ────────────────────────────────── */
+
+/** 주제별 시작/완료 수 + 정답률 */
+export async function fetchVolumeLearningStats() {
+  const rows = await hogql(`
+    SELECT
+      properties.topic                                             AS topic,
+      countIf(event = 'volume_learning_started')                  AS started,
+      countIf(event = 'volume_learning_completed')                AS completed,
+      countIf(event = 'volume_prediction_answered' AND properties.is_correct = true) AS correct,
+      countIf(event = 'volume_prediction_answered')               AS answered
+    FROM events
+    WHERE event IN (
+      'volume_learning_started','volume_learning_completed','volume_prediction_answered'
+    )
+      AND timestamp >= now() - interval 30 day
+    GROUP BY topic
+    ORDER BY started DESC
+  `)
+  if (!rows) return null
+  return (rows as [string, number, number, number, number][]).map(
+    ([topic, started, completed, correct, answered]) => ({
+      topic:    topic    ?? '',
+      started:  started  ?? 0,
+      completed: completed ?? 0,
+      completeRate: started > 0 ? Math.round((completed / started) * 100) : 0,
+      accuracy:     answered > 0 ? Math.round((correct  / answered) * 100) : 0,
+    })
+  )
 }
 
 /** 실전 챌린지 재도전 분포 */

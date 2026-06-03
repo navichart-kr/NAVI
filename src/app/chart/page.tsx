@@ -5,14 +5,17 @@ import { useSearchParams } from 'next/navigation'
 import { ChartContainer } from '@/components/chart/ChartContainer'
 import { RSIChart } from '@/components/chart/RSIChart'
 import { MACDChart } from '@/components/chart/MACDChart'
+import { VolumeChart } from '@/components/chart/VolumeChart'
 import { IndicatorToolbar } from '@/components/chart/IndicatorToolbar'
 import { PeriodToolbar } from '@/components/chart/PeriodToolbar'
 import { DrawingToolbar } from '@/components/chart/DrawingToolbar'
 import { TutorialManager }    from '@/components/tutorial/TutorialManager'
 import { TutorialMenuButton } from '@/components/tutorial/TutorialMenuButton'
+import { LearningOverlay }    from '@/components/learning/LearningOverlay'
 import { NaviSymbol }         from '@/components/ui/NaviSymbol'
 import { ThemeToggle }        from '@/components/ui/ThemeToggle'
 import { useTutorialStore }   from '@/stores/tutorialStore'
+import { useLearningStore }   from '@/stores/learningStore'
 import { useChartStore } from '@/stores/chartStore'
 import { useLearnStore } from '@/stores/learnStore'
 import { useStockData } from '@/hooks/useStockData'
@@ -23,14 +26,16 @@ function ChartPageInner() {
   const { hasCompletedOnce, start, startLesson } = useTutorialStore()
   const { activeIndicators, drawingTool } = useChartStore()
   const { markIndicator, markDrawing } = useLearnStore()
+  const { mode: learningMode, openCandleSelect, openVolumeSelect } = useLearningStore()
   const searchParams = useSearchParams()
   const prevInds = useRef(new Set<string>())
 
   // 실제 NVDA 데이터 fetch
   useStockData('NVDA')
 
-  const showRSI  = activeIndicators.has('rsi')
-  const showMACD = activeIndicators.has('macd')
+  const showRSI    = activeIndicators.has('rsi')
+  const showMACD   = activeIndicators.has('macd')
+  const showVolume = learningMode === 'volume-active'
 
   /* ── 튜토리얼 시작 조건 ─────────────────────────────────────
      · ?onboard=1 쿼리: /tutorial 페이지에서 명시적으로 시작
@@ -65,6 +70,7 @@ function ChartPageInner() {
   return (
     <>
       <TutorialManager />
+      <LearningOverlay />
 
       {/* ── 헤더 ─────────────────────────────────────────────── */}
       {/* 브랜드 > 콘텐츠 순서: NaviSymbol이 NVDA보다 먼저 인식되도록 */}
@@ -123,8 +129,9 @@ function ChartPageInner() {
         {/* 메인 차트 + 서브 차트 */}
         <div className="bg-navi-surface border border-navi-border rounded-xl p-2 sm:p-3">
           <ChartContainer />
-          {showRSI  && <RSIChart />}
-          {showMACD && <MACDChart />}
+          {showRSI    && <RSIChart />}
+          {showMACD   && <MACDChart />}
+          {showVolume && <VolumeChart />}
         </div>
 
         {/* 도구 섹션 — 모바일: 좌우 2열 / PC: 동일 2열 */}
@@ -155,6 +162,49 @@ function ChartPageInner() {
               <p className="hidden sm:block text-[11px] text-navi-muted mt-0.5">차트에 직접 그려봐요</p>
             </div>
             <DrawingToolbar />
+          </div>
+        </div>
+
+        {/* ── 캔들 패턴 학습 + 거래량 학습 버튼 ──────────────
+            작도도구와 지표 더 알아보기 사이에 배치
+        ──────────────────────────────────────────────────── */}
+        <div className="mt-3">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="h-px flex-1 bg-navi-border/50" />
+            <span className="text-[9px] font-bold tracking-[0.08em] uppercase text-navi-muted px-1">
+              패턴 학습
+            </span>
+            <div className="h-px flex-1 bg-navi-border/50" />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {/* 캔들 패턴 학습 */}
+            <button
+              onClick={openCandleSelect}
+              className="flex flex-col items-start gap-1 px-3.5 py-3 rounded-xl
+                         bg-navi-surface border border-navi-border
+                         hover:border-navi-action/40 hover:bg-navi-action/[0.04]
+                         transition-all active:scale-[0.98] text-left"
+            >
+              <span className="text-[20px] leading-none">🕯️</span>
+              <p className="text-[12px] font-bold text-navi-text mt-0.5">캔들 패턴 학습</p>
+              <p className="text-[10px] text-navi-muted leading-snug">
+                실제 차트에서<br />캔들 패턴을 배워보세요
+              </p>
+            </button>
+            {/* 거래량 학습 */}
+            <button
+              onClick={openVolumeSelect}
+              className="flex flex-col items-start gap-1 px-3.5 py-3 rounded-xl
+                         bg-navi-surface border border-navi-border
+                         hover:border-navi-action/40 hover:bg-navi-action/[0.04]
+                         transition-all active:scale-[0.98] text-left"
+            >
+              <span className="text-[20px] leading-none">📊</span>
+              <p className="text-[12px] font-bold text-navi-text mt-0.5">거래량 학습</p>
+              <p className="text-[10px] text-navi-muted leading-snug">
+                거래량과 가격의 관계를<br />직접 확인해보세요
+              </p>
+            </button>
           </div>
         </div>
 

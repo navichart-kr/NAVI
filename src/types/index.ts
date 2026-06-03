@@ -103,4 +103,5 @@ export interface CandleData {
   high: number
   low: number
   close: number
+  volume?: number  // 거래량 (거래량 학습 활성 시 사용)
 }

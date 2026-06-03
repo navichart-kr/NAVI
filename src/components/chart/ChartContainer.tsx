@@ -63,6 +63,7 @@ export function ChartContainer() {
     drawingTool, drawingStep,
     setDrawingTool, setDrawingStep,
     clearDrawingsSignal,
+    learningHighlight,
   } = useChartStore()
 
   const { focusBarsFromEnd, currentStep } = useTutorialStore()
@@ -326,6 +327,76 @@ export function ChartContainer() {
       to:   n + 3,
     })
   }, [focusBarsFromEnd, candleData.length])
+
+  // ── 학습 하이라이트 — 줌 + 마커 ────────────────────────────
+  useEffect(() => {
+    const chart  = chartRef.current
+    const candle = candleRef.current
+    if (!chart || !candle || !candleData.length) return
+
+    if (!learningHighlight) {
+      candle.setMarkers([])
+      return
+    }
+
+    const { candleIndex, prevCandleIndex, windowFrom, windowTo, outcome, showResult } = learningHighlight
+
+    // 줌: windowFrom ~ windowTo (+ 약간 여백)
+    chart.timeScale().setVisibleLogicalRange({
+      from: Math.max(0, windowFrom - 2),
+      to:   Math.min(candleData.length - 1, windowTo + 2),
+    })
+
+    // 마커 구성
+    type Marker = {
+      time: string; position: 'aboveBar' | 'belowBar'
+      color: string; shape: 'circle' | 'arrowUp' | 'arrowDown'
+      text?: string; size?: number
+    }
+    const markers: Marker[] = []
+
+    // 이전 캔들 마커 (장악형)
+    if (prevCandleIndex !== undefined && candleData[prevCandleIndex]) {
+      markers.push({
+        time:     candleData[prevCandleIndex].time as string,
+        position: 'aboveBar',
+        color:    '#F59E0B',
+        shape:    'circle',
+        size:     1,
+      })
+    }
+
+    // 패턴 메인 캔들 마커
+    if (candleData[candleIndex]) {
+      markers.push({
+        time:     candleData[candleIndex].time as string,
+        position: 'aboveBar',
+        color:    '#F59E0B',
+        shape:    'circle',
+        text:     '●',
+        size:     2,
+      })
+    }
+
+    // 결과 마커 (예측 결과 공개 후)
+    if (showResult && candleData[candleIndex + 3]) {
+      markers.push({
+        time:     candleData[candleIndex + 3].time as string,
+        position: outcome === 'up' ? 'belowBar' : 'aboveBar',
+        color:    outcome === 'up'   ? '#34D399'
+                : outcome === 'down' ? '#F87171'
+                : '#F59E0B',
+        shape:    outcome === 'up'   ? 'arrowUp'
+                : outcome === 'down' ? 'arrowDown'
+                : 'circle',
+        size:     2,
+      })
+    }
+
+    // markers는 time 오름차순이어야 함
+    markers.sort((a, b) => String(a.time).localeCompare(String(b.time)))
+    candle.setMarkers(markers as any)
+  }, [learningHighlight, candleData])
 
   // ── 테마 변경 → 차트 색상 업데이트 (재생성 없이 applyOptions) ─
   useEffect(() => {

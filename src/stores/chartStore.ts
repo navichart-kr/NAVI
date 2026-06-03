@@ -39,6 +39,23 @@ interface ChartState {
    */
   clearDrawingsSignal:    number
   requestClearDrawings:   () => void
+
+  /**
+   * learningHighlight — 캔들/거래량 학습 시 차트 줌 + 마커 표시
+   * learningStore 가 학습 시작/종료 시 set/clear 한다.
+   */
+  learningHighlight: LearningHighlight | null
+  setLearningHighlight: (h: LearningHighlight | null) => void
+}
+
+export interface LearningHighlight {
+  candleIndex:     number          // 패턴 주 캔들 인덱스
+  prevCandleIndex?: number         // 이전 캔들 인덱스 (장악형)
+  windowFrom:      number          // 가시 범위 시작
+  windowTo:        number          // 가시 범위 끝
+  outcome:         'up' | 'down' | 'sideways'
+  showResult:      boolean         // 결과 마커 표시 여부
+  type:            'candle' | 'volume'
 }
 
 export const useChartStore = create<ChartState>((set) => ({
@@ -71,4 +88,7 @@ export const useChartStore = create<ChartState>((set) => ({
 
   clearDrawingsSignal:  0,
   requestClearDrawings: () => set((s) => ({ clearDrawingsSignal: s.clearDrawingsSignal + 1 })),
+
+  learningHighlight:    null,
+  setLearningHighlight: (learningHighlight) => set({ learningHighlight }),
 }))

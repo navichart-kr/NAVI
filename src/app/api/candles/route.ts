@@ -52,10 +52,11 @@ export async function GET(req: NextRequest) {
 
     const candles = timestamps
       .map((ts, i) => {
-        const open  = quote.open?.[i]
-        const high  = quote.high?.[i]
-        const low   = quote.low?.[i]
-        const close = quote.close?.[i]
+        const open   = quote.open?.[i]
+        const high   = quote.high?.[i]
+        const low    = quote.low?.[i]
+        const close  = quote.close?.[i]
+        const volume = quote.volume?.[i]
         if (!open || !high || !low || !close) return null
 
         const date = new Date(ts * 1000)
@@ -63,10 +64,11 @@ export async function GET(req: NextRequest) {
 
         return {
           time,
-          open:  Math.round(open  * 100) / 100,
-          high:  Math.round(high  * 100) / 100,
-          low:   Math.round(low   * 100) / 100,
-          close: Math.round(close * 100) / 100,
+          open:   Math.round(open  * 100) / 100,
+          high:   Math.round(high  * 100) / 100,
+          low:    Math.round(low   * 100) / 100,
+          close:  Math.round(close * 100) / 100,
+          volume: volume ? Math.round(volume) : undefined,
         }
       })
       .filter(Boolean)

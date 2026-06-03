@@ -12,6 +12,8 @@ import {
   fetchIndicatorLearnMore,
   fetchChallengePrediction,
   fetchChallengeAvgIndicators,
+  fetchCandleLearningStats,
+  fetchVolumeLearningStats,
   IS_POSTHOG_CONFIGURED,
 } from '@/lib/posthog-admin'
 import { KPICard }         from '@/components/manage/KPICard'
@@ -99,6 +101,7 @@ export default async function ManagePage() {
     indicators, drawings,
     recentEvt, retry,
     learnMore, prediction, avgInd,
+    candleStats, volumeStats,
   ] = await Promise.all([
     fetchEventCounts(),
     fetchDailyTrend(90),
@@ -113,6 +116,8 @@ export default async function ManagePage() {
     fetchIndicatorLearnMore(),
     fetchChallengePrediction(),
     fetchChallengeAvgIndicators(),
+    fetchCandleLearningStats(),
+    fetchVolumeLearningStats(),
   ])
 
   /* ── 방문 KPI ──────────────────────────────────────────── */
@@ -153,6 +158,39 @@ export default async function ManagePage() {
   const avgQuizRate = allRates.length > 0
     ? Math.round(allRates.reduce((a, b) => a + b, 0) / allRates.length)
     : 0
+
+  /* ── 캔들/거래량 학습 KPI ───────────────────────────── */
+  const candleStart30  = cnt(events, 'candle_learning_started')
+  const candleDone30   = cnt(events, 'candle_learning_completed')
+  const candleRate30   = pct(candleDone30, candleStart30)
+  const volumeStart30  = cnt(events, 'volume_learning_started')
+  const volumeDone30   = cnt(events, 'volume_learning_completed')
+  const volumeRate30   = pct(volumeDone30, volumeStart30)
+
+  const CANDLE_PATTERN_LABELS: Record<string, string> = {
+    doji:               '도지',
+    hammer:             '망치형',
+    'inverted-hammer':  '역망치형',
+    'bullish-engulfing':'상승 장악형',
+    'bearish-engulfing':'하락 장악형',
+  }
+  const VOLUME_TOPIC_LABELS: Record<string, string> = {
+    intro:       '거래량이란?',
+    'up-surge':  '상승+거래량↑',
+    'down-surge':'하락+거래량↑',
+    divergence:  '거래량 다이버전스',
+    quiz:        '실전 문제',
+  }
+
+  // 가장 어려운 캔들 패턴 (정답률 최저)
+  const hardestCandle = candleStats?.filter(s => s.completed > 0).length
+    ? candleStats!.slice().sort((a, b) => a.accuracy - b.accuracy)[0]
+    : null
+
+  // 가장 이탈 많은 거래량 주제 (완료율 최저, started > 0)
+  const worstVolume = volumeStats?.filter(v => v.started > 0).length
+    ? volumeStats!.slice().sort((a, b) => a.completeRate - b.completeRate)[0]
+    : null
 
   /* ── AI 인사이트 계산 ──────────────────────────────────── */
   const hardestQuiz   = judgment?.length
@@ -244,6 +282,28 @@ export default async function ManagePage() {
         : '데이터 없음',
       good:  chalRate >= 50,
       alert: chalRate > 0 && chalRate < 30,
+    },
+    {
+      icon: '🕯️',
+      title: '어려운 캔들',
+      value: hardestCandle
+        ? (CANDLE_PATTERN_LABELS[hardestCandle.pattern] ?? hardestCandle.pattern)
+        : '–',
+      sub:   hardestCandle
+        ? `정답률 ${hardestCandle.accuracy}%`
+        : '데이터 없음',
+      alert: !!(hardestCandle && hardestCandle.accuracy < 35),
+    },
+    {
+      icon: '📊',
+      title: '거래량 이탈 주제',
+      value: worstVolume
+        ? (VOLUME_TOPIC_LABELS[worstVolume.topic] ?? worstVolume.topic)
+        : '–',
+      sub:   worstVolume
+        ? `완료율 ${worstVolume.completeRate}%`
+        : '데이터 없음',
+      alert: !!(worstVolume && worstVolume.completeRate < 30),
     },
   ]
 
@@ -899,6 +959,174 @@ export default async function ManagePage() {
                 </div>
               ) : <p className="text-[12px] text-navi-muted">데이터 없음</p>}
             </div>
+          </div>
+        ) : <NotConfigured message="PostHog API 연결 후 표시됩니다." />}
+      </SectionCard>
+
+      {/* ══════════════════════════════════════
+          캔들 패턴 학습 분석
+      ══════════════════════════════════════ */}
+      <SectionCard
+        id="candle"
+        title="캔들 패턴 학습 분석"
+        sub="candle_learning_* 이벤트 · 최근 30일"
+      >
+        {IS_POSTHOG_CONFIGURED ? (
+          <div className="space-y-5">
+            {/* KPI */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <KPICard
+                label="학습 시작"
+                value={candleStart30.toLocaleString()}
+                sub="candle_learning_started"
+              />
+              <KPICard
+                label="학습 완료"
+                value={candleDone30.toLocaleString()}
+                sub="candle_learning_completed"
+              />
+              <KPICard
+                label="완료율"
+                value={candleStart30 > 0 ? fmtPct(candleRate30) : '–'}
+                accent={candleRate30 >= 50}
+                sub="완료 / 시작"
+              />
+              <KPICard
+                label="시작률"
+                value={visitors30 > 0 ? fmtPct(pct(candleStart30, visitors30)) : '–'}
+                sub="방문자 대비"
+              />
+            </div>
+
+            {/* 패턴별 테이블 */}
+            {candleStats && candleStats.length > 0 ? (
+              <div>
+                <p className="text-[11px] font-bold text-navi-muted uppercase tracking-[0.08em] mb-3">
+                  패턴별 상세
+                </p>
+                {/* 헤더 */}
+                <div className="grid grid-cols-[1fr_60px_60px_64px_64px] text-[10px] font-bold uppercase tracking-[0.06em] text-navi-muted px-2 pb-2 border-b border-navi-border/40">
+                  <span>패턴</span>
+                  <span className="text-right">시작</span>
+                  <span className="text-right">완료</span>
+                  <span className="text-right">완료율</span>
+                  <span className="text-right">정답률</span>
+                </div>
+                <div className="space-y-0.5 mt-1">
+                  {candleStats.map(s => (
+                    <div key={s.pattern}
+                      className="grid grid-cols-[1fr_60px_60px_64px_64px] items-center px-2 py-2 rounded-lg hover:bg-navi-surface2/50 transition-colors">
+                      <span className="text-[12px] font-semibold text-navi-text">
+                        {CANDLE_PATTERN_LABELS[s.pattern] ?? s.pattern}
+                      </span>
+                      <span className="text-[12px] text-navi-secondary text-right">{s.started}</span>
+                      <span className="text-[12px] text-navi-secondary text-right">{s.completed}</span>
+                      <span className={`text-[12px] font-bold text-right ${s.completeRate >= 50 ? 'text-[#34D399]' : s.completeRate < 25 && s.started > 0 ? 'text-navi-danger' : 'text-navi-text'}`}>
+                        {s.started > 0 ? `${s.completeRate}%` : '–'}
+                      </span>
+                      <span className={`text-[12px] font-bold text-right ${s.accuracy >= 60 ? 'text-[#34D399]' : s.accuracy < 35 && s.completed > 0 ? 'text-navi-danger' : 'text-navi-text'}`}>
+                        {s.completed > 0 ? `${s.accuracy}%` : '–'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                {/* 가장 어려운 패턴 */}
+                {hardestCandle && hardestCandle.completed > 0 && (
+                  <div className="mt-3 bg-navi-danger/[0.07] border border-navi-danger/25 rounded-xl px-4 py-3">
+                    <p className="text-[11px] text-navi-muted mb-1">가장 어려운 패턴</p>
+                    <p className="text-[14px] font-bold text-navi-danger">
+                      {CANDLE_PATTERN_LABELS[hardestCandle.pattern] ?? hardestCandle.pattern}
+                    </p>
+                    <p className="text-[11px] text-navi-secondary">정답률 {hardestCandle.accuracy}%</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-[12px] text-navi-muted">데이터 없음</p>
+            )}
+          </div>
+        ) : <NotConfigured message="PostHog API 연결 후 표시됩니다." />}
+      </SectionCard>
+
+      {/* ══════════════════════════════════════
+          거래량 학습 분석
+      ══════════════════════════════════════ */}
+      <SectionCard
+        id="volume"
+        title="거래량 학습 분석"
+        sub="volume_learning_* 이벤트 · 최근 30일"
+      >
+        {IS_POSTHOG_CONFIGURED ? (
+          <div className="space-y-5">
+            {/* KPI */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <KPICard
+                label="학습 시작"
+                value={volumeStart30.toLocaleString()}
+                sub="volume_learning_started"
+              />
+              <KPICard
+                label="학습 완료"
+                value={volumeDone30.toLocaleString()}
+                sub="volume_learning_completed"
+              />
+              <KPICard
+                label="완료율"
+                value={volumeStart30 > 0 ? fmtPct(volumeRate30) : '–'}
+                accent={volumeRate30 >= 50}
+                sub="완료 / 시작"
+              />
+              <KPICard
+                label="시작률"
+                value={visitors30 > 0 ? fmtPct(pct(volumeStart30, visitors30)) : '–'}
+                sub="방문자 대비"
+              />
+            </div>
+
+            {/* 주제별 테이블 */}
+            {volumeStats && volumeStats.length > 0 ? (
+              <div>
+                <p className="text-[11px] font-bold text-navi-muted uppercase tracking-[0.08em] mb-3">
+                  주제별 상세
+                </p>
+                <div className="grid grid-cols-[1fr_60px_60px_64px_64px] text-[10px] font-bold uppercase tracking-[0.06em] text-navi-muted px-2 pb-2 border-b border-navi-border/40">
+                  <span>주제</span>
+                  <span className="text-right">시작</span>
+                  <span className="text-right">완료</span>
+                  <span className="text-right">완료율</span>
+                  <span className="text-right">정답률</span>
+                </div>
+                <div className="space-y-0.5 mt-1">
+                  {volumeStats.map(s => (
+                    <div key={s.topic}
+                      className="grid grid-cols-[1fr_60px_60px_64px_64px] items-center px-2 py-2 rounded-lg hover:bg-navi-surface2/50 transition-colors">
+                      <span className="text-[12px] font-semibold text-navi-text">
+                        {VOLUME_TOPIC_LABELS[s.topic] ?? s.topic}
+                      </span>
+                      <span className="text-[12px] text-navi-secondary text-right">{s.started}</span>
+                      <span className="text-[12px] text-navi-secondary text-right">{s.completed}</span>
+                      <span className={`text-[12px] font-bold text-right ${s.completeRate >= 50 ? 'text-[#34D399]' : s.completeRate < 25 && s.started > 0 ? 'text-navi-danger' : 'text-navi-text'}`}>
+                        {s.started > 0 ? `${s.completeRate}%` : '–'}
+                      </span>
+                      <span className={`text-[12px] font-bold text-right ${s.accuracy >= 60 ? 'text-[#34D399]' : s.accuracy < 35 && s.completed > 0 ? 'text-navi-danger' : 'text-navi-text'}`}>
+                        {s.completed > 0 ? `${s.accuracy}%` : '–'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                {worstVolume && worstVolume.started > 0 && (
+                  <div className="mt-3 bg-amber-500/[0.07] border border-amber-500/25 rounded-xl px-4 py-3">
+                    <p className="text-[11px] text-navi-muted mb-1">가장 이탈 많은 주제</p>
+                    <p className="text-[14px] font-bold text-amber-400">
+                      {VOLUME_TOPIC_LABELS[worstVolume.topic] ?? worstVolume.topic}
+                    </p>
+                    <p className="text-[11px] text-navi-secondary">완료율 {worstVolume.completeRate}%</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-[12px] text-navi-muted">데이터 없음</p>
+            )}
           </div>
         ) : <NotConfigured message="PostHog API 연결 후 표시됩니다." />}
       </SectionCard>
