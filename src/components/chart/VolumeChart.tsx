@@ -42,26 +42,27 @@ export function VolumeChart() {
         vertLines: { color: cc.grid },
         horzLines: { color: cc.grid },
       },
-      crosshair: { mode: CrosshairMode.Normal },
+      crosshair:    { mode: CrosshairMode.Normal },
+      handleScroll: false,   // 메인 차트와 독립 스크롤 방지
+      handleScale:  false,   // 메인 차트와 독립 줌 방지
       rightPriceScale: {
-        borderColor: cc.border,
+        borderColor:  cc.border,
         scaleMargins: { top: 0.1, bottom: 0.05 },
       },
       timeScale: {
-        borderColor: cc.border,
-        timeVisible: true,
-        fixLeftEdge:  true,
-        fixRightEdge: true,
-        visible: false,  // RSI와 동일하게 타임스케일 숨김
+        borderColor:  cc.border,
+        visible:      false,  // 타임스케일 숨김 (메인 차트와 공유)
       },
       width:  containerRef.current.clientWidth,
       height: H,
     })
 
-    // 메인 차트와 시간축 동기화
-    chartSync.register(chart)
+    // 메인 차트(캔들) 시간 범위에 구독 — RSI/MACD 와 동일한 방식
+    const unsubSync = chartSync.subscribe((range) => {
+      chart.timeScale().setVisibleRange(range)
+    })
 
-    // 차트 팬/줌 시 거래량 막대 뷰포트 좌표 재계산
+    // 차트 팬/줌 후 거래량 막대 뷰포트 좌표 재계산 (timeRangeChange는 setVisibleRange 호출 시 발생)
     chart.timeScale().subscribeVisibleTimeRangeChange(() => {
       computeBarHLRef.current()
     })
@@ -77,7 +78,7 @@ export function VolumeChart() {
     return () => {
       window.removeEventListener('resize', onResize)
       useChartStore.getState().setHighlightViewportBox(null)
-      chartSync.unregister()
+      unsubSync()   // 이 서브차트 구독만 해제 (RSI/MACD 구독은 유지)
       chart.remove()
       chartRef.current = null
     }
