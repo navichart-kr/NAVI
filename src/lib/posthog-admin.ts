@@ -43,18 +43,18 @@ export async function hogql(
 
 /* ─── 대시보드용 쿼리 함수들 ─────────────────────────────── */
 
-/** 주요 이벤트 카운트 (오늘 / 30일) */
+/** 주요 이벤트 카운트 (오늘 / 7일 / 30일) */
 export async function fetchEventCounts() {
   const rows = await hogql(`
     SELECT
       event,
-      countIf(toDate(timestamp) = today())                     AS today_cnt,
-      countIf(timestamp >= now() - interval 7  day)            AS d7_cnt,
-      countIf(timestamp >= now() - interval 30 day)            AS d30_cnt,
+      countIf(toDate(timestamp) = today())                      AS today_cnt,
+      countIf(timestamp >= now() - interval 7  day)             AS d7_cnt,
+      countIf(timestamp >= now() - interval 30 day)             AS d30_cnt,
       uniqIf(distinct_id, timestamp >= now() - interval 30 day) AS d30_users
     FROM events
     WHERE event IN (
-      '$pageview','tutorial_started','tutorial_completed',
+      '$pageview','tutorial_started','tutorial_completed','tutorial_exit',
       'tutorial_step_viewed','tutorial_judgment_answered',
       'comprehensive_test_answered',
       'advanced_learning_opened',
@@ -63,9 +63,11 @@ export async function fetchEventCounts() {
       'advanced_fibonacci_started','advanced_fibonacci_completed',
       'advanced_step_viewed',
       'challenge_started','challenge_completed',
+      'challenge_prediction_submitted',
       'simulation_started','simulation_completed','simulation_retry',
       'indicator_enabled','drawing_tool_used',
-      'landing_cta_clicked'
+      'landing_cta_clicked',
+      'indicator_learn_more_opened','indicator_page_viewed','indicator_cta_clicked'
     )
       AND timestamp >= now() - interval 30 day
     GROUP BY event
@@ -79,8 +81,8 @@ export async function fetchEventCounts() {
   return map
 }
 
-/** 방문자 일별 추이 (최근 30일) */
-export async function fetchDailyTrend() {
+/** 방문자 일별 추이 (최근 N일, 기본 90일) */
+export async function fetchDailyTrend(days = 90) {
   const rows = await hogql(`
     SELECT
       toDate(timestamp)                                            AS date,
@@ -88,7 +90,7 @@ export async function fetchDailyTrend() {
       countIf(event = '$pageview')                                 AS pageviews,
       uniqIf(properties.$session_id, event = '$pageview')         AS sessions
     FROM events
-    WHERE timestamp >= now() - interval 30 day
+    WHERE timestamp >= now() - interval ${days} day
     GROUP BY date
     ORDER BY date ASC
   `)
@@ -119,9 +121,9 @@ export async function fetchTutorialStepCounts() {
 export async function fetchAdvancedStepCounts() {
   const rows = await hogql(`
     SELECT
-      properties.topic     AS topic,
+      properties.topic         AS topic,
       properties.step::integer AS step_num,
-      uniq(distinct_id)    AS users
+      uniq(distinct_id)        AS users
     FROM events
     WHERE event = 'advanced_step_viewed'
       AND timestamp >= now() - interval 30 day
@@ -134,7 +136,7 @@ export async function fetchAdvancedStepCounts() {
   }))
 }
 
-/** 판단 퀴즈 정답률 */
+/** 판단 퀴즈 정답률 (tutorial_judgment_answered) */
 export async function fetchJudgmentAccuracy() {
   const rows = await hogql(`
     SELECT
@@ -157,7 +159,7 @@ export async function fetchJudgmentAccuracy() {
   }))
 }
 
-/** 종합 테스트 정답률 */
+/** 종합 테스트 정답률 (4개 문항 모두 포함) */
 export async function fetchTestAccuracy() {
   const rows = await hogql(`
     SELECT
@@ -166,7 +168,6 @@ export async function fetchTestAccuracy() {
       count()                                          AS total
     FROM events
     WHERE event = 'comprehensive_test_answered'
-      AND properties.question_id != 'prediction'
       AND timestamp >= now() - interval 30 day
     GROUP BY qid
     HAVING total > 0
@@ -181,10 +182,13 @@ export async function fetchTestAccuracy() {
   }))
 }
 
-/** 지표 사용 횟수 */
+/** 지표 사용 횟수 + 사용자 수 */
 export async function fetchIndicatorUsage() {
   const rows = await hogql(`
-    SELECT properties.indicator AS indicator, count() AS cnt
+    SELECT
+      properties.indicator AS indicator,
+      count()              AS cnt,
+      uniq(distinct_id)    AS users
     FROM events
     WHERE event = 'indicator_enabled'
       AND timestamp >= now() - interval 30 day
@@ -192,13 +196,18 @@ export async function fetchIndicatorUsage() {
     ORDER BY cnt DESC
   `)
   if (!rows) return null
-  return (rows as [string, number][]).map(([indicator, cnt]) => ({ indicator: indicator ?? '', cnt: cnt ?? 0 }))
+  return (rows as [string, number, number][]).map(([indicator, cnt, users]) => ({
+    indicator: indicator ?? '', cnt: cnt ?? 0, users: users ?? 0,
+  }))
 }
 
-/** 작도 도구 사용 횟수 */
+/** 작도 도구 사용 횟수 + 사용자 수 */
 export async function fetchDrawingUsage() {
   const rows = await hogql(`
-    SELECT properties.tool AS tool, count() AS cnt
+    SELECT
+      properties.tool   AS tool,
+      count()           AS cnt,
+      uniq(distinct_id) AS users
     FROM events
     WHERE event = 'drawing_tool_used'
       AND timestamp >= now() - interval 30 day
@@ -206,7 +215,72 @@ export async function fetchDrawingUsage() {
     ORDER BY cnt DESC
   `)
   if (!rows) return null
-  return (rows as [string, number][]).map(([tool, cnt]) => ({ tool: tool ?? '', cnt: cnt ?? 0 }))
+  return (rows as [string, number, number][]).map(([tool, cnt, users]) => ({
+    tool: tool ?? '', cnt: cnt ?? 0, users: users ?? 0,
+  }))
+}
+
+/** 지표 더 알아보기 분석 */
+export async function fetchIndicatorLearnMore() {
+  const rows = await hogql(`
+    SELECT
+      COALESCE(properties.indicator, '') AS indicator,
+      countIf(event = 'indicator_learn_more_opened') AS learn_more,
+      countIf(event = 'indicator_page_viewed')        AS page_viewed,
+      countIf(event = 'indicator_cta_clicked')        AS cta_clicked
+    FROM events
+    WHERE event IN (
+        'indicator_learn_more_opened',
+        'indicator_page_viewed',
+        'indicator_cta_clicked'
+      )
+      AND timestamp >= now() - interval 30 day
+    GROUP BY indicator
+    ORDER BY page_viewed DESC
+  `)
+  if (!rows) return null
+  return (rows as [string, number, number, number][]).map(
+    ([indicator, learn_more, page_viewed, cta_clicked]) => ({
+      indicator:   indicator   ?? '',
+      learn_more:  learn_more  ?? 0,
+      page_viewed: page_viewed ?? 0,
+      cta_clicked: cta_clicked ?? 0,
+      return_rate: page_viewed > 0
+        ? Math.round((cta_clicked / page_viewed) * 100)
+        : 0,
+    }),
+  )
+}
+
+/** 챌린지 예측 방향 분포 */
+export async function fetchChallengePrediction() {
+  const rows = await hogql(`
+    SELECT
+      properties.direction AS direction,
+      count()              AS cnt
+    FROM events
+    WHERE event = 'challenge_prediction_submitted'
+      AND timestamp >= now() - interval 30 day
+    GROUP BY direction
+    ORDER BY cnt DESC
+  `)
+  if (!rows) return null
+  return (rows as [string, number][]).map(([direction, cnt]) => ({
+    direction: direction ?? '', cnt: cnt ?? 0,
+  }))
+}
+
+/** 챌린지 평균 사용 지표 수 */
+export async function fetchChallengeAvgIndicators() {
+  const rows = await hogql(`
+    SELECT avg(properties.active_indicators_count::float) AS avg_ind
+    FROM events
+    WHERE event = 'challenge_started'
+      AND timestamp >= now() - interval 30 day
+  `)
+  if (!rows || !rows[0]) return null
+  const val = (rows[0] as [number])[0]
+  return val != null ? parseFloat(val.toFixed(1)) : null
 }
 
 /** 최근 이벤트 로그 */
@@ -226,11 +300,13 @@ export async function fetchRecentEvents(limit = 100) {
       AND timestamp >= now() - interval 1 day
     ORDER BY timestamp DESC
     LIMIT ${limit}
-  `, 60) // 1분 캐시
+  `, 60)
   if (!rows) return null
   return (rows as [string, string, string, string, string, string, string, string][])
     .map(([ts, event, uid, step, indicator, tool, tutorial, is_correct]) => ({
-      ts: ts ?? '', event: event ?? '', uid: (uid ?? '').slice(0, 8),
+      ts:    ts    ?? '',
+      event: event ?? '',
+      uid:   (uid ?? '').slice(0, 8),
       props: [step, indicator, tool, tutorial, is_correct].filter(Boolean).join(', '),
     }))
 }

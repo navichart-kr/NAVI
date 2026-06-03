@@ -3,15 +3,17 @@
 import { useRouter } from 'next/navigation'
 
 const NAV_ITEMS = [
-  { label: 'KPI',    href: '#kpi'       },
-  { label: '추이',   href: '#trend'     },
-  { label: '퍼널',   href: '#funnel'    },
-  { label: '단계',   href: '#steps'     },
-  { label: '심화',   href: '#advanced'  },
-  { label: '퀴즈',   href: '#quiz'      },
-  { label: '지표',   href: '#indicator' },
-  { label: '챌린지', href: '#challenge' },
-  { label: '로그',   href: '#log'       },
+  { label: 'KPI',      href: '#kpi'        },
+  { label: '추이',     href: '#trend'      },
+  { label: '퍼널',     href: '#funnel'     },
+  { label: '튜토리얼', href: '#steps'      },
+  { label: '퀴즈',     href: '#quiz'       },
+  { label: '심화',     href: '#advanced'   },
+  { label: '더알아보기', href: '#learnmore' },
+  { label: '챌린지',   href: '#challenge'  },
+  { label: '재도전',   href: '#retry'      },
+  { label: '지표활용', href: '#indicators' },
+  { label: '로그',     href: '#log'        },
 ]
 
 export function AdminNav() {
@@ -32,12 +34,12 @@ export function AdminNav() {
         </div>
 
         {/* 섹션 네비 (데스크탑) */}
-        <nav className="hidden md:flex items-center gap-0.5 overflow-x-auto flex-1 justify-center">
+        <nav className="hidden md:flex items-center gap-0 overflow-x-auto flex-1 justify-center">
           {NAV_ITEMS.map(item => (
             <a
               key={item.href}
               href={item.href}
-              className="px-2.5 py-1 rounded-lg text-[11px] font-medium text-navi-muted hover:text-navi-text hover:bg-navi-surface2 transition-all whitespace-nowrap"
+              className="px-2 py-1 rounded-lg text-[10px] font-medium text-navi-muted hover:text-navi-text hover:bg-navi-surface2 transition-all whitespace-nowrap"
             >
               {item.label}
             </a>

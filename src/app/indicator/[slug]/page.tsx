@@ -4,6 +4,7 @@ import { indicators } from '@/data/indicators'
 import { DifficultyBadge } from '@/components/ui/DifficultyBadge'
 import { RoundedCard } from '@/components/ui/RoundedCard'
 import { MiniChartPreview } from '@/components/chart/MiniChartPreview'
+import { IndicatorPageTracker, IndicatorCTAButton } from '@/components/analytics/IndicatorPageEvents'
 
 interface Props {
   params: { slug: string }
@@ -98,6 +99,9 @@ export default function IndicatorDetailPage({ params }: Props) {
   return (
     <main className="min-h-screen px-4 py-10 max-w-2xl mx-auto">
 
+      {/* 페이지 진입 이벤트 추적 */}
+      <IndicatorPageTracker indicator={indicator.slug} difficulty={indicator.difficulty} />
+
       {/* 뒤로가기 */}
       <Link href="/chart" className="text-navi-muted text-sm hover:text-navi-text">
         ← 차트로 돌아가기
@@ -170,15 +174,9 @@ export default function IndicatorDetailPage({ params }: Props) {
 
       </div>
 
-      {/* ── CTA ── */}
+      {/* ── CTA — 클릭 이벤트 추적 포함 ── */}
       <div className="mt-10">
-        <Link
-          href="/chart"
-          className="w-full block text-center py-3.5 bg-navi-action text-white
-                     text-[14px] font-semibold rounded-2xl hover:bg-navi-action-hover transition-colors"
-        >
-          차트에서 직접 확인해보기 →
-        </Link>
+        <IndicatorCTAButton indicator={indicator.slug} />
       </div>
 
     </main>
