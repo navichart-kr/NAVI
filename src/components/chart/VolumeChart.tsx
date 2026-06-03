@@ -22,6 +22,9 @@ export function VolumeChart() {
   const containerRef = useRef<HTMLDivElement>(null)
   const chartRef     = useRef<IChartApi | null>(null)
 
+  // 거래량 막대 뷰포트 좌표 계산 함수 ref (timeRangeChange 콜백에서 호출)
+  const computeBarHLRef = useRef<() => void>(() => {})
+
   const { candleData, learningHighlight } = useChartStore()
   const { isDark } = useTheme()
 
@@ -58,6 +61,11 @@ export function VolumeChart() {
     // 메인 차트와 시간축 동기화
     chartSync.register(chart)
 
+    // 차트 팬/줌 시 거래량 막대 뷰포트 좌표 재계산
+    chart.timeScale().subscribeVisibleTimeRangeChange(() => {
+      computeBarHLRef.current()
+    })
+
     const onResize = () => {
       if (containerRef.current) {
         chart.applyOptions({ width: containerRef.current.clientWidth })
@@ -68,11 +76,65 @@ export function VolumeChart() {
     chartRef.current = chart
     return () => {
       window.removeEventListener('resize', onResize)
+      useChartStore.getState().setHighlightViewportBox(null)
       chartSync.unregister()
       chart.remove()
       chartRef.current = null
     }
   }, [])   // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── 거래량 막대 뷰포트 좌표 계산 ───────────────────────────
+  // learningHighlight.type === 'volume' 일 때 특정 막대의 뷰포트 위치를
+  // setHighlightViewportBox 로 저장 → TutorialStep spotlight이 막대 단위로 표시
+  useEffect(() => {
+    const highlightIdx = learningHighlight?.type === 'volume'
+      ? (learningHighlight.volumeHighlightIndex ?? learningHighlight.candleIndex)
+      : -1
+
+    if (highlightIdx < 0 || !candleData[highlightIdx]) {
+      computeBarHLRef.current = () => { useChartStore.getState().setHighlightViewportBox(null) }
+      useChartStore.getState().setHighlightViewportBox(null)
+      return
+    }
+
+    const c = candleData[highlightIdx]
+
+    computeBarHLRef.current = () => {
+      const chart = chartRef.current
+      const el    = containerRef.current
+      if (!chart || !el) return
+
+      const x = chart.timeScale().timeToCoordinate(c.time as any)
+      if (x === null) { useChartStore.getState().setHighlightViewportBox(null); return }
+
+      const logRange = chart.timeScale().getVisibleLogicalRange()
+      if (!logRange) return
+      const visibleBars = Math.max(1, logRange.to - logRange.from)
+      // 해당 막대의 컬럼 너비 (차트 전체 너비 기준, 0.55 = 막대 점유율)
+      const barWidth = Math.max(6, (el.clientWidth / visibleBars) * 0.55)
+
+      const cr = el.getBoundingClientRect()
+      useChartStore.getState().setHighlightViewportBox({
+        left:   cr.left + x - barWidth / 2 - 4,
+        top:    cr.top,
+        right:  cr.left + x + barWidth / 2 + 4,
+        bottom: cr.bottom,
+        width:  barWidth + 8,
+        height: cr.height,
+      })
+    }
+
+    // 즉시 계산 (double-RAF: 차트 좌표계 정착 후)
+    const raf = requestAnimationFrame(() => requestAnimationFrame(() => computeBarHLRef.current()))
+    return () => cancelAnimationFrame(raf)
+  }, [candleData, learningHighlight])
+
+  // ── 페이지 스크롤 시 막대 뷰포트 좌표 재계산 ─────────────────
+  useEffect(() => {
+    const onScroll = () => computeBarHLRef.current()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   // ── 데이터 + 하이라이트 동기화 ─────────────────────────────
   useEffect(() => {

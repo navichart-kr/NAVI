@@ -256,8 +256,7 @@ export function buildCandleLearningSteps(data: CandleData[]): TutorialStep[] {
   const QUIZ_INTRO: TutorialStep = {
     id:                       'candle-quiz-intro',
     targetSelector:           '#chart-area',
-    floatSide:                'bottom-right',
-    position:                 'top',
+    position:                 'bottom',
     title:                    '5개 패턴을 모두 배웠어요!',
     body:                     '이제 배운 내용을 확인해봐요. 5문항 퀴즈를 풀면 캔들 패턴 학습이 완료돼요.',
     actionRequired:           'free',
@@ -269,8 +268,7 @@ export function buildCandleLearningSteps(data: CandleData[]): TutorialStep[] {
     {
       id:             'candle-quiz-1',
       targetSelector: '#chart-area',
-      floatSide:      'bottom-right',
-      position:       'top',
+      position:       'bottom',
       title:          '퀴즈 1/5',
       body:           '망치형(Hammer)이 나타날 때 일어나는 일은?',
       actionRequired: 'judgment',
@@ -287,8 +285,7 @@ export function buildCandleLearningSteps(data: CandleData[]): TutorialStep[] {
     {
       id:             'candle-quiz-2',
       targetSelector: '#chart-area',
-      floatSide:      'bottom-right',
-      position:       'top',
+      position:       'bottom',
       title:          '퀴즈 2/5',
       body:           '상승 장악형(Bullish Engulfing)의 특징은?',
       actionRequired: 'judgment',
@@ -305,8 +302,7 @@ export function buildCandleLearningSteps(data: CandleData[]): TutorialStep[] {
     {
       id:             'candle-quiz-3',
       targetSelector: '#chart-area',
-      floatSide:      'bottom-right',
-      position:       'top',
+      position:       'bottom',
       title:          '퀴즈 3/5',
       body:           '도지(Doji)는 무엇을 나타내나요?',
       actionRequired: 'judgment',
@@ -323,8 +319,7 @@ export function buildCandleLearningSteps(data: CandleData[]): TutorialStep[] {
     {
       id:             'candle-quiz-4',
       targetSelector: '#chart-area',
-      floatSide:      'bottom-right',
-      position:       'top',
+      position:       'bottom',
       title:          '퀴즈 4/5',
       body:           '유성형(Shooting Star)은 어떤 신호인가요?',
       actionRequired: 'judgment',
@@ -341,8 +336,7 @@ export function buildCandleLearningSteps(data: CandleData[]): TutorialStep[] {
     {
       id:             'candle-quiz-5',
       targetSelector: '#chart-area',
-      floatSide:      'bottom-right',
-      position:       'top',
+      position:       'bottom',
       title:          '퀴즈 5/5',
       body:           '장대양봉의 특징은?',
       actionRequired: 'judgment',
@@ -364,8 +358,7 @@ export function buildCandleLearningSteps(data: CandleData[]): TutorialStep[] {
   steps.push({
     id:             'candle-complete',
     targetSelector: '#chart-area',
-    floatSide:      'bottom-right',
-    position:       'top',
+    position:       'bottom',
     title:          '캔들 패턴 학습 완료!',
     body:           '5가지 패턴을 모두 배웠어요. 실제 차트를 볼 때 이 패턴들을 찾아보세요.',
     tips: [

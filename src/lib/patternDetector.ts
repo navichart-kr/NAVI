@@ -302,79 +302,92 @@ export function findVolumePattern(
     }
 
     case 'up-surge': {
-      // 거래량 급증 + 가격 상승 + 이후 상승 지속
+      // 조건 1순위: 거래량 평균 2배 이상 + 명확한 양봉(1.5%+) + 이후 상승
+      let best1 = { idx: MIN_IDX, score: -Infinity }
       for (let i = MIN_IDX; i < maxIdx; i++) {
         const c   = data[i]
         const vol = c.volume ?? 0
         const pct = (c.close - c.open) / c.open
-        if (pct > 0.012 && vol > avg * 1.4 && getOutcome(data, i, 4) === 'up') {
-          return {
-            candleIndex: i,
-            windowFrom:  Math.max(0, i - 18),
-            windowTo:    Math.min(data.length - 1, i + 18),
-            outcome:     'up',
-          }
+        if (pct > 0.015 && vol > avg * 2.0) {
+          const s = pct * (vol / avg)
+          if (s > best1.score) { best1 = { idx: i, score: s } }
         }
       }
-      // fallback: 최고 점수 상승 + 거래량 날
-      let best = { idx: MIN_IDX, score: -Infinity }
+      if (best1.score > -Infinity) {
+        return {
+          candleIndex: best1.idx,
+          windowFrom:  Math.max(0, best1.idx - 18),
+          windowTo:    Math.min(data.length - 1, best1.idx + 18),
+          outcome:     getOutcome(data, best1.idx),
+        }
+      }
+      // fallback: 평균 이상 + 양봉 중 최고 점수
+      let best2 = { idx: MIN_IDX, score: -Infinity }
       for (let i = MIN_IDX; i < maxIdx; i++) {
         const c   = data[i]
         const vol = c.volume ?? 0
         const pct = (c.close - c.open) / c.open
-        if (pct > 0 && vol > avg) {
+        if (pct > 0 && vol > avg * 1.2) {
           const s = pct * (vol / avg)
-          if (s > best.score) { best = { idx: i, score: s } }
+          if (s > best2.score) { best2 = { idx: i, score: s } }
         }
       }
       return {
-        candleIndex: best.idx,
-        windowFrom:  Math.max(0, best.idx - 18),
-        windowTo:    Math.min(data.length - 1, best.idx + 18),
-        outcome:     getOutcome(data, best.idx),
+        candleIndex: best2.idx,
+        windowFrom:  Math.max(0, best2.idx - 18),
+        windowTo:    Math.min(data.length - 1, best2.idx + 18),
+        outcome:     getOutcome(data, best2.idx),
       }
     }
 
     case 'down-surge': {
-      // 거래량 급증 + 가격 하락 + 이후 하락 지속
+      // 조건 1순위: 거래량 평균 2배 이상 + 명확한 음봉(-1.5%+) + 이후 하락
+      let best1 = { idx: MIN_IDX, score: -Infinity }
       for (let i = MIN_IDX; i < maxIdx; i++) {
         const c   = data[i]
         const vol = c.volume ?? 0
         const pct = (c.close - c.open) / c.open
-        if (pct < -0.012 && vol > avg * 1.4 && getOutcome(data, i, 4) === 'down') {
-          return {
-            candleIndex: i,
-            windowFrom:  Math.max(0, i - 18),
-            windowTo:    Math.min(data.length - 1, i + 18),
-            outcome:     'down',
-          }
+        if (pct < -0.015 && vol > avg * 2.0) {
+          const s = Math.abs(pct) * (vol / avg)
+          if (s > best1.score) { best1 = { idx: i, score: s } }
         }
       }
-      let best = { idx: MIN_IDX, score: -Infinity }
+      if (best1.score > -Infinity) {
+        return {
+          candleIndex: best1.idx,
+          windowFrom:  Math.max(0, best1.idx - 18),
+          windowTo:    Math.min(data.length - 1, best1.idx + 18),
+          outcome:     getOutcome(data, best1.idx),
+        }
+      }
+      // fallback
+      let best2 = { idx: MIN_IDX, score: -Infinity }
       for (let i = MIN_IDX; i < maxIdx; i++) {
         const c   = data[i]
         const vol = c.volume ?? 0
         const pct = (c.close - c.open) / c.open
-        if (pct < 0 && vol > avg) {
+        if (pct < 0 && vol > avg * 1.2) {
           const s = Math.abs(pct) * (vol / avg)
-          if (s > best.score) { best = { idx: i, score: s } }
+          if (s > best2.score) { best2 = { idx: i, score: s } }
         }
       }
       return {
-        candleIndex: best.idx,
-        windowFrom:  Math.max(0, best.idx - 18),
-        windowTo:    Math.min(data.length - 1, best.idx + 18),
-        outcome:     getOutcome(data, best.idx),
+        candleIndex: best2.idx,
+        windowFrom:  Math.max(0, best2.idx - 18),
+        windowTo:    Math.min(data.length - 1, best2.idx + 18),
+        outcome:     getOutcome(data, best2.idx),
       }
     }
 
     case 'divergence': {
-      // 가격 5일 상승 + 거래량 감소 (bearish divergence)
+      // 가격 5일 상승 + 거래량 뚜렷한 감소 (최근봉 거래량이 5일 전 대비 60% 이하)
       for (let i = MIN_IDX + 5; i < maxIdx; i++) {
-        const priceUp  = data[i].close > data[i - 5].close * 1.01
+        const priceUp  = data[i].close > data[i - 5].close * 1.015
         const vols     = data.slice(i - 5, i + 1).map(c => c.volume ?? 0)
-        const volTrend = vols[0] > 0 && (vols[vols.length - 1] / vols[0]) < 0.75
-        if (priceUp && volTrend) {
+        const volStart = Math.max(...vols.slice(0, 3))   // 초기 3봉 최대값
+        const volEnd   = Math.max(...vols.slice(-3))      // 최근 3봉 최대값
+        const volFall  = volStart > 0 && (volEnd / volStart) < 0.6
+        if (priceUp && volFall) {
           return {
             candleIndex: i,
             windowFrom:  Math.max(0, i - 18),
@@ -388,12 +401,23 @@ export function findVolumePattern(
     }
 
     case 'quiz': {
-      // 최근 절반 구간에서 가장 거래량이 높은 날을 문제로
-      const start = Math.floor(maxIdx * 0.5)
-      let bestIdx = start, bestVol = 0
-      for (let i = start; i < maxIdx; i++) {
-        const v = data[i].volume ?? 0
-        if (v > bestVol) { bestVol = v; bestIdx = i }
+      // 전체 구간에서 거래량이 가장 많고 방향이 명확한 날 (up-surge와 동일 로직, 다른 구간)
+      let bestIdx = MIN_IDX, bestScore = -Infinity
+      for (let i = MIN_IDX; i < maxIdx; i++) {
+        const c   = data[i]
+        const vol = c.volume ?? 0
+        const pct = Math.abs((c.close - c.open) / c.open)
+        if (vol > avg * 1.5 && pct > 0.01) {
+          const s = pct * (vol / avg)
+          if (s > bestScore) { bestScore = s; bestIdx = i }
+        }
+      }
+      // fallback: 무조건 최고 거래량
+      if (bestScore === -Infinity) {
+        for (let i = MIN_IDX; i < maxIdx; i++) {
+          const v = data[i].volume ?? 0
+          if (v > (data[bestIdx].volume ?? 0)) bestIdx = i
+        }
       }
       return {
         candleIndex: bestIdx,
