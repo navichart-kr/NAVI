@@ -51,9 +51,17 @@ export function ChartContainer() {
   // HTML 피보나치 레이블 (React state → re-render로 표시)
   const [fibLabels, setFibLabels] = useState<{ value: number; label: string; color: string; y: number }[]>([])
 
+  // ── 학습 하이라이트 캔들 박스 위치 (HTML 오버레이) ──────────
+  const [candleHL, setCandleHL] = useState<{
+    x: number; yTop: number; yBot: number; w: number
+    prevX?: number; prevYTop?: number; prevYBot?: number
+  } | null>(null)
+
   // ── 최신값을 ref에 동기화 (stale closure 방지) ────────
   const drawingToolRef  = useRef(useChartStore.getState().drawingTool)
   const candleDataRef   = useRef(useChartStore.getState().candleData)
+  // 학습 하이라이트 재계산 함수 ref (chart subscribe에서 호출)
+  const computeCandleHLRef = useRef<() => void>(() => {})
   // candleData 참조 변경 여부 추적 (fitContent를 데이터 변경 시에만 호출)
   const prevCandleRef   = useRef(useChartStore.getState().candleData)
 
@@ -196,10 +204,11 @@ export function ChartContainer() {
     // 메인 차트를 chartSync에 등록 → RSI/MACD 서브 차트에 범위 전파
     chartSync.register(chart)
 
-    // 스크롤/줌 시 피보나치 레이블 + 가이드 마커 재계산
+    // 스크롤/줌 시 피보나치 레이블 + 가이드 마커 + 학습 하이라이트 재계산
     chart.timeScale().subscribeVisibleTimeRangeChange(() => {
       updateFibLabels()
       updateFibGuideMarkers()
+      computeCandleHLRef.current()
     })
 
     // 튜토리얼 캔들 클릭 감지 (drawingTool 상태와 무관하게 항상 활성)
@@ -328,74 +337,64 @@ export function ChartContainer() {
     })
   }, [focusBarsFromEnd, candleData.length])
 
-  // ── 학습 하이라이트 — 줌 + 마커 ────────────────────────────
+  // ── 학습 하이라이트 — 줌 + HTML 캔들 박스 ──────────────────
   useEffect(() => {
     const chart  = chartRef.current
     const candle = candleRef.current
-    if (!chart || !candle || !candleData.length) return
+    if (!chart || !candle || !candleData.length) { setCandleHL(null); return }
 
-    if (!learningHighlight) {
-      candle.setMarkers([])
-      return
-    }
+    if (!learningHighlight) { setCandleHL(null); return }
 
-    const { candleIndex, prevCandleIndex, windowFrom, windowTo, outcome, showResult } = learningHighlight
+    const { candleIndex, prevCandleIndex, windowFrom, windowTo } = learningHighlight
 
-    // 줌: windowFrom ~ windowTo (+ 약간 여백)
+    // 줌: windowFrom ~ windowTo (+ 여백)
     chart.timeScale().setVisibleLogicalRange({
       from: Math.max(0, windowFrom - 2),
       to:   Math.min(candleData.length - 1, windowTo + 2),
     })
 
-    // 마커 구성
-    type Marker = {
-      time: string; position: 'aboveBar' | 'belowBar'
-      color: string; shape: 'circle' | 'arrowUp' | 'arrowDown'
-      text?: string; size?: number
-    }
-    const markers: Marker[] = []
+    // 캔들 박스 계산 함수 (줌/팬 시에도 호출됨)
+    const compute = () => {
+      const c = candleData[candleIndex]
+      if (!c) { setCandleHL(null); return }
 
-    // 이전 캔들 마커 (장악형)
-    if (prevCandleIndex !== undefined && candleData[prevCandleIndex]) {
-      markers.push({
-        time:     candleData[prevCandleIndex].time as string,
-        position: 'aboveBar',
-        color:    '#F59E0B',
-        shape:    'circle',
-        size:     1,
-      })
-    }
+      const x = chart.timeScale().timeToCoordinate(c.time as any)
+      const yHigh = candle.priceToCoordinate(c.high)
+      const yLow  = candle.priceToCoordinate(c.low)
+      if (x === null || yHigh === null || yLow === null) { setCandleHL(null); return }
 
-    // 패턴 메인 캔들 마커
-    if (candleData[candleIndex]) {
-      markers.push({
-        time:     candleData[candleIndex].time as string,
-        position: 'aboveBar',
-        color:    '#F59E0B',
-        shape:    'circle',
-        text:     '●',
-        size:     2,
-      })
-    }
+      const logRange = chart.timeScale().getVisibleLogicalRange()
+      if (!logRange) { setCandleHL(null); return }
+      const visibleBars = Math.max(1, logRange.to - logRange.from)
+      const barWidth    = Math.max(6, (containerRef.current?.clientWidth ?? 400) / visibleBars * 0.55)
 
-    // 결과 마커 (예측 결과 공개 후)
-    if (showResult && candleData[candleIndex + 3]) {
-      markers.push({
-        time:     candleData[candleIndex + 3].time as string,
-        position: outcome === 'up' ? 'belowBar' : 'aboveBar',
-        color:    outcome === 'up'   ? '#34D399'
-                : outcome === 'down' ? '#F87171'
-                : '#F59E0B',
-        shape:    outcome === 'up'   ? 'arrowUp'
-                : outcome === 'down' ? 'arrowDown'
-                : 'circle',
-        size:     2,
-      })
+      const result: typeof candleHL = {
+        x:    x - barWidth / 2 - 3,
+        yTop: yHigh - 5,
+        yBot: yLow  + 5,
+        w:    barWidth + 6,
+      }
+
+      // 이전 캔들 (장악형)
+      if (prevCandleIndex !== undefined && candleData[prevCandleIndex]) {
+        const pc = candleData[prevCandleIndex]
+        const px  = chart.timeScale().timeToCoordinate(pc.time as any)
+        const pyH = candle.priceToCoordinate(pc.high)
+        const pyL = candle.priceToCoordinate(pc.low)
+        if (px !== null && pyH !== null && pyL !== null) {
+          result.prevX    = px - barWidth / 2 - 3
+          result.prevYTop = pyH - 5
+          result.prevYBot = pyL + 5
+        }
+      }
+      setCandleHL(result)
     }
 
-    // markers는 time 오름차순이어야 함
-    markers.sort((a, b) => String(a.time).localeCompare(String(b.time)))
-    candle.setMarkers(markers as any)
+    // ref에 등록 (timeRangeChange 핸들러에서 호출)
+    computeCandleHLRef.current = compute
+    // RAF로 좌표 계산 (줌 완료 후)
+    const raf = requestAnimationFrame(() => requestAnimationFrame(compute))
+    return () => cancelAnimationFrame(raf)
   }, [learningHighlight, candleData])
 
   // ── 테마 변경 → 차트 색상 업데이트 (재생성 없이 applyOptions) ─
@@ -638,6 +637,41 @@ export function ChartContainer() {
         className="absolute top-0 left-0 pointer-events-none"
         style={{ height: getChartH(), borderRadius: '1rem' }}
       />
+
+      {/* 학습 하이라이트 — 대상 캔들에 amber 박스 오버레이 */}
+      {candleHL && (
+        <>
+          {/* 이전 캔들 (장악형 등 2캔들 패턴) */}
+          {candleHL.prevX !== undefined && candleHL.prevYTop !== undefined && candleHL.prevYBot !== undefined && (
+            <div
+              className="absolute pointer-events-none"
+              style={{
+                left:            candleHL.prevX,
+                top:             candleHL.prevYTop,
+                width:           candleHL.w,
+                height:          candleHL.prevYBot - candleHL.prevYTop,
+                border:          '1.5px dashed rgba(251,191,36,0.55)',
+                borderRadius:    2,
+                backgroundColor: 'rgba(251,191,36,0.03)',
+              }}
+            />
+          )}
+          {/* 메인 캔들 */}
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              left:            candleHL.x,
+              top:             candleHL.yTop,
+              width:           candleHL.w,
+              height:          candleHL.yBot - candleHL.yTop,
+              border:          '2px solid rgba(251,191,36,0.90)',
+              borderRadius:    2,
+              backgroundColor: 'rgba(251,191,36,0.06)',
+              boxShadow:       '0 0 10px rgba(251,191,36,0.35)',
+            }}
+          />
+        </>
+      )}
 
       {/* 이동평균선 범례 — 켜진 경우만 표시 */}
       {activeIndicators.has('moving-average') && (() => {

@@ -79,8 +79,9 @@ export function VolumeChart() {
     const chart = chartRef.current
     if (!chart || !candleData.length) return
 
+    // volumeHighlightIndex 우선, 없으면 candleIndex fallback
     const highlightIdx = learningHighlight?.type === 'volume'
-      ? learningHighlight.candleIndex
+      ? (learningHighlight.volumeHighlightIndex ?? learningHighlight.candleIndex)
       : -1
 
     // 기존 시리즈 제거 후 재생성 (색상 변경 가장 간단한 방법)

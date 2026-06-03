@@ -15,7 +15,7 @@ import { LearningOverlay }    from '@/components/learning/LearningOverlay'
 import { NaviSymbol }         from '@/components/ui/NaviSymbol'
 import { ThemeToggle }        from '@/components/ui/ThemeToggle'
 import { useTutorialStore }   from '@/stores/tutorialStore'
-import { useLearningStore }   from '@/stores/learningStore'
+import { openCandleSelect, openVolumeSelect } from '@/stores/learningStore'
 import { useChartStore } from '@/stores/chartStore'
 import { useLearnStore } from '@/stores/learnStore'
 import { useStockData } from '@/hooks/useStockData'
@@ -23,10 +23,9 @@ import { trackEvent }   from '@/lib/analytics'
 import Link from 'next/link'
 
 function ChartPageInner() {
-  const { hasCompletedOnce, start, startLesson } = useTutorialStore()
+  const { hasCompletedOnce, start, startLesson, isActive, currentLessonKey } = useTutorialStore()
   const { activeIndicators, drawingTool } = useChartStore()
   const { markIndicator, markDrawing } = useLearnStore()
-  const { mode: learningMode, openCandleSelect, openVolumeSelect } = useLearningStore()
   const searchParams = useSearchParams()
   const prevInds = useRef(new Set<string>())
 
@@ -35,7 +34,8 @@ function ChartPageInner() {
 
   const showRSI    = activeIndicators.has('rsi')
   const showMACD   = activeIndicators.has('macd')
-  const showVolume = learningMode === 'volume-active'
+  // 거래량 학습 활성 시 VolumeChart 표시
+  const showVolume = isActive && currentLessonKey === 'volume-learning'
 
   /* ── 튜토리얼 시작 조건 ─────────────────────────────────────
      · ?onboard=1 쿼리: /tutorial 페이지에서 명시적으로 시작
@@ -185,10 +185,9 @@ function ChartPageInner() {
                          hover:border-navi-action/40 hover:bg-navi-action/[0.04]
                          transition-all active:scale-[0.98] text-left"
             >
-              <span className="text-[20px] leading-none"></span>
-              <p className="text-[12px] font-bold text-navi-text mt-0.5">캔들 패턴 학습</p>
+              <p className="text-[12px] font-bold text-navi-text">캔들 패턴 학습</p>
               <p className="text-[10px] text-navi-muted leading-snug">
-                실제 차트에서<br />캔들 패턴을 배워보세요
+                실제 차트에서<br />5가지 패턴을 배워보세요
               </p>
             </button>
             {/* 거래량 학습 */}
@@ -199,8 +198,7 @@ function ChartPageInner() {
                          hover:border-navi-action/40 hover:bg-navi-action/[0.04]
                          transition-all active:scale-[0.98] text-left"
             >
-              <span className="text-[20px] leading-none"></span>
-              <p className="text-[12px] font-bold text-navi-text mt-0.5">거래량 학습</p>
+              <p className="text-[12px] font-bold text-navi-text">거래량 학습</p>
               <p className="text-[10px] text-navi-muted leading-snug">
                 거래량과 가격의 관계를<br />직접 확인해보세요
               </p>

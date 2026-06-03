@@ -251,6 +251,8 @@ const LESSON_TOPIC: Record<string, string> = {
   'fibonacci-advanced': 'fibonacci',
   'rsi-advanced':       'rsi',
   'macd-advanced':      'macd',
+  'candle-learning':    'candlestick',
+  'volume-learning':    'volume',
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -896,7 +898,6 @@ export function TutorialStep() {
           )}>
             <div className="flex items-center gap-2 mb-1.5">
               {isCorrect && <span className="text-[11px] font-bold text-navi-success"></span>}
-              <span className="text-[14px] font-bold leading-none text-navi-text">{chosen.icon}</span>
               <span className="text-[12px] font-semibold text-navi-text">{chosen.label}</span>
             </div>
             <p className="text-[12px] text-navi-secondary leading-relaxed">{chosen.feedback}</p>

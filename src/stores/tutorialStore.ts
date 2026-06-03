@@ -13,6 +13,8 @@ const LESSON_TYPE: Record<string, string> = {
   'fibonacci-advanced': 'fibonacci',
   'rsi-advanced':       'rsi',
   'macd-advanced':      'macd',
+  'candle-learning':    'candlestick',
+  'volume-learning':    'volume',
 }
 
 const LESSON_MAP: Record<string, TutorialStep[]> = {
@@ -55,6 +57,8 @@ interface TutorialState {
   dismissCompletion: () => void
   /** 레슨 시작 — key에 해당하는 단계셋을 로드 */
   startLesson: (key: string) => void
+  /** 동적으로 생성된 TutorialStep[]를 레슨으로 시작 (캔들·거래량 학습 전용) */
+  startDynamicLesson: (steps: TutorialStep[], key: string) => void
   /** 심화 레슨 정상 완료 — 모든 지표·작도 초기화 후 닫기 */
   completeLesson: () => void
 
@@ -164,6 +168,11 @@ export const useTutorialStore = create<TutorialState>()(
           clearDrawings()
         }
 
+        // 다음 단계 진입 전: learningHighlightOnEnter 처리
+        if (nextStep.learningHighlightOnEnter !== undefined) {
+          useChartStore.getState().setLearningHighlight(nextStep.learningHighlightOnEnter)
+        }
+
         set({
           currentIndex:     nextIndex,
           currentStep:      nextStep,
@@ -202,6 +211,11 @@ export const useTutorialStore = create<TutorialState>()(
           if (ai.has(prevStep.indicatorKey as any)) ti(prevStep.indicatorKey as any)
         }
 
+        // 이전 단계 진입 전: learningHighlightOnEnter 처리
+        if (prevStep.learningHighlightOnEnter !== undefined) {
+          useChartStore.getState().setLearningHighlight(prevStep.learningHighlightOnEnter)
+        }
+
         set({
           currentIndex:     prevIndex,
           currentStep:      prevStep,
@@ -221,10 +235,11 @@ export const useTutorialStore = create<TutorialState>()(
             tutorial_type: lessonType ?? 'lesson',
             step_number:   currentIndex + 1,
           })
-          // 레슨 건너뛰기: 기초 과정 완료 처리 안 함 + 지표·작도 초기화
+          // 레슨 건너뛰기: 기초 과정 완료 처리 안 함 + 지표·작도·학습하이라이트 초기화
           const { activeIndicators, toggleIndicator } = useChartStore.getState()
           activeIndicators.forEach(slug => toggleIndicator(slug))
           useChartStore.getState().requestClearDrawings()
+          useChartStore.getState().setLearningHighlight(null)
           set({ isActive: false, currentStep: null, showCompletionScreen: false, isLesson: false, currentLessonKey: null, steps: tutorialSteps, ...INITIAL_ACTION_STATE })
         } else {
           trackEvent('tutorial_exit', { tutorial_type: 'basic', step_number: currentIndex + 1 })
@@ -274,10 +289,45 @@ export const useTutorialStore = create<TutorialState>()(
           })
         }
 
+        // 기존 학습 하이라이트 초기화
+        useChartStore.getState().setLearningHighlight(null)
+
         set({
           isActive:             true,
           currentIndex:         0,
           currentStep:          lessonSteps[0],
+          steps:                lessonSteps,
+          isLesson:             true,
+          currentLessonKey:     key,
+          showCompletionScreen: false,
+          ...INITIAL_ACTION_STATE,
+        })
+      },
+
+      /** 동적으로 생성된 TutorialStep[]를 레슨으로 시작 (캔들·거래량 학습 전용) */
+      startDynamicLesson: (lessonSteps: TutorialStep[], key: string) => {
+        if (!lessonSteps.length) return
+        const { activeIndicators, toggleIndicator } = useChartStore.getState()
+        activeIndicators.forEach(slug => toggleIndicator(slug))
+
+        // 분석 이벤트
+        const lessonType = LESSON_TYPE[key] ?? key
+        trackEvent(`${lessonType}_tutorial_started`, {
+          lesson_key:   key,
+          total_steps:  lessonSteps.length,
+          device_type:  getDeviceType(),
+        })
+
+        // 첫 단계의 학습 하이라이트 적용
+        const first = lessonSteps[0]
+        if (first.learningHighlightOnEnter !== undefined) {
+          useChartStore.getState().setLearningHighlight(first.learningHighlightOnEnter)
+        }
+
+        set({
+          isActive:             true,
+          currentIndex:         0,
+          currentStep:          first,
           steps:                lessonSteps,
           isLesson:             true,
           currentLessonKey:     key,
@@ -295,16 +345,24 @@ export const useTutorialStore = create<TutorialState>()(
         if (lessonType) {
           const { steps } = get()
           trackEvent('tutorial_step_completed', { step_number: currentIndex + 1, lesson_type: lessonType })
-          trackEvent(`advanced_${lessonType}_completed`, {
-            lesson_type:  lessonType,
-            total_steps:  steps.length,
-            device_type:  getDeviceType(),
-          })
+          // 캔들·거래량 학습은 전용 이벤트 이름 사용
+          if (currentLessonKey === 'candle-learning') {
+            trackEvent('candlestick_tutorial_completed', { total_steps: steps.length, device_type: getDeviceType() })
+          } else if (currentLessonKey === 'volume-learning') {
+            trackEvent('volume_tutorial_completed', { total_steps: steps.length, device_type: getDeviceType() })
+          } else {
+            trackEvent(`advanced_${lessonType}_completed`, {
+              lesson_type:  lessonType,
+              total_steps:  steps.length,
+              device_type:  getDeviceType(),
+            })
+          }
         }
 
         const { activeIndicators, toggleIndicator } = useChartStore.getState()
         activeIndicators.forEach(slug => toggleIndicator(slug))
         useChartStore.getState().requestClearDrawings()
+        useChartStore.getState().setLearningHighlight(null)
         set({
           isActive:             false,
           currentStep:          null,

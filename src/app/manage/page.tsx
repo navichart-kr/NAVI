@@ -160,11 +160,12 @@ export default async function ManagePage() {
     : 0
 
   /* ── 캔들/거래량 학습 KPI ───────────────────────────── */
-  const candleStart30  = cnt(events, 'candle_learning_started')
-  const candleDone30   = cnt(events, 'candle_learning_completed')
+  // 신규 이벤트명(candlestick_tutorial_*) + 구버전(candle_learning_*) 합산
+  const candleStart30  = cnt(events, 'candlestick_tutorial_started') + cnt(events, 'candle_learning_started')
+  const candleDone30   = cnt(events, 'candlestick_tutorial_completed') + cnt(events, 'candle_learning_completed')
   const candleRate30   = pct(candleDone30, candleStart30)
-  const volumeStart30  = cnt(events, 'volume_learning_started')
-  const volumeDone30   = cnt(events, 'volume_learning_completed')
+  const volumeStart30  = cnt(events, 'volume_tutorial_started') + cnt(events, 'volume_learning_started')
+  const volumeDone30   = cnt(events, 'volume_tutorial_completed') + cnt(events, 'volume_learning_completed')
   const volumeRate30   = pct(volumeDone30, volumeStart30)
 
   const CANDLE_PATTERN_LABELS: Record<string, string> = {
@@ -173,6 +174,8 @@ export default async function ManagePage() {
     'inverted-hammer':  '역망치형',
     'bullish-engulfing':'상승 장악형',
     'bearish-engulfing':'하락 장악형',
+    'shooting-star':    '유성형',
+    marubozu:           '장대양봉',
   }
   const VOLUME_TOPIC_LABELS: Record<string, string> = {
     intro:       '거래량이란?',

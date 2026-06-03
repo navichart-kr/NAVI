@@ -68,8 +68,13 @@ export async function fetchEventCounts() {
       'indicator_enabled','drawing_tool_used',
       'landing_cta_clicked',
       'indicator_learn_more_opened','indicator_page_viewed','indicator_cta_clicked',
+      'candle_tutorial_started','candlestick_tutorial_started',
+      'candlestick_pattern_viewed','candlestick_prediction_answered',
+      'candlestick_quiz_answered','candlestick_tutorial_completed',
       'candle_learning_started','candle_pattern_viewed',
       'candle_prediction_answered','candle_learning_completed',
+      'volume_tutorial_started','volume_concept_viewed',
+      'volume_quiz_answered','volume_tutorial_completed',
       'volume_learning_started','volume_learning_step_viewed',
       'volume_prediction_answered','volume_learning_completed'
     )

@@ -85,6 +85,15 @@ export interface TutorialStep {
   mobileTips?: string[]
 
   /**
+   * 이 단계 진입 시 차트 학습 하이라이트를 변경
+   *   undefined  → 변경 없음 (이전 상태 유지)
+   *   null       → 하이라이트 해제
+   *   LearningHighlight → 해당 설정으로 업데이트 (줌 + 캔들 강조)
+   * 캔들·거래량 학습 단계에서 사용.
+   */
+  learningHighlightOnEnter?: LearningHighlight | null
+
+  /**
    * 피보나치 작도 가이드 — 저점·고점 위치에 펄스 마커 표시
    * ChartContainer 가 priceToCoordinate + timeToCoordinate 로 위치 계산 후
    * HTML 오버레이로 렌더링한다.
@@ -104,4 +113,19 @@ export interface CandleData {
   low: number
   close: number
   volume?: number  // 거래량 (거래량 학습 활성 시 사용)
+}
+
+/**
+ * LearningHighlight — 캔들/거래량 학습 시 차트 줌 + 캔들 강조 정보
+ * chartStore 와 TutorialStep 양쪽에서 참조하므로 types에 정의
+ */
+export interface LearningHighlight {
+  candleIndex:          number          // 패턴 주 캔들 인덱스
+  prevCandleIndex?:     number          // 이전 캔들 (장악형 등 2캔들 패턴)
+  windowFrom:           number          // 가시 범위 시작 (logical index)
+  windowTo:             number          // 가시 범위 끝
+  outcome:              'up' | 'down' | 'sideways'
+  showResult:           boolean         // 결과(미래) 구간 공개 여부
+  type:                 'candle' | 'volume'
+  volumeHighlightIndex?: number         // 거래량 학습 시 강조할 거래량 바 인덱스
 }

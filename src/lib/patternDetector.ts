@@ -13,6 +13,8 @@ export type PatternType =
   | 'inverted-hammer'
   | 'bullish-engulfing'
   | 'bearish-engulfing'
+  | 'shooting-star'
+  | 'marubozu'
 
 export type VolumeTopicType =
   | 'intro'
@@ -64,6 +66,16 @@ function isDowntrend(data: CandleData[], index: number, lookback = 6): boolean {
     if (slice[i].close < slice[i - 1].close) down++
   }
   return down >= Math.floor(lookback * 0.5)
+}
+
+function isUptrend(data: CandleData[], index: number, lookback = 6): boolean {
+  if (index < lookback) return false
+  const slice = data.slice(index - lookback, index)
+  let up = 0
+  for (let i = 1; i < slice.length; i++) {
+    if (slice[i].close > slice[i - 1].close) up++
+  }
+  return up >= Math.floor(lookback * 0.5)
 }
 
 /* ─── 개별 패턴 감지 함수 ─────────────────────────── */
@@ -119,6 +131,32 @@ function isBearishEngulfing(prev: CandleData, curr: CandleData): boolean {
   if (prev.close <= prev.open) return false   // prev = 양봉이어야
   if (curr.close >= curr.open) return false   // curr = 음봉이어야
   return curr.open >= prev.close && curr.close <= prev.open
+}
+
+/**
+ * 유성형: 위 꼬리 >= 2× 몸통, 아래 꼬리 <= 0.3× 몸통, 상승 추세 직후
+ */
+function isShootingStar(c: CandleData): boolean {
+  const body    = Math.abs(c.close - c.open)
+  const bodyBot = Math.min(c.open, c.close)
+  const bodyTop = Math.max(c.open, c.close)
+  const lower   = bodyBot - c.low
+  const upper   = c.high - bodyTop
+  const range   = c.high - c.low
+  if (range < c.close * 0.004) return false
+  const minBody = Math.max(body, c.close * 0.001)
+  return upper >= 2 * minBody && lower <= minBody * 0.3
+}
+
+/**
+ * 장대양봉: 양봉이며 몸통이 전체 범위의 75% 이상, 최소 1.5% 일중 변동
+ */
+function isMarubozu(c: CandleData): boolean {
+  if (c.close <= c.open) return false
+  const body  = c.close - c.open
+  const range = c.high - c.low
+  if (range < c.close * 0.015) return false
+  return body / range >= 0.75
 }
 
 /* ─── 퍼블릭 API: 캔들 패턴 ──────────────────────── */
@@ -183,6 +221,22 @@ export function findBestCandlePattern(
           index: i, prevIndex: i - 1,
           strength: Math.min(100, (currBody / prevBody) * 40),
         })
+        break
+      }
+
+      case 'shooting-star': {
+        if (!isShootingStar(c) || !isUptrend(data, i)) break
+        const minBody = Math.max(Math.abs(c.close - c.open), c.close * 0.001)
+        const upper   = c.high - Math.max(c.open, c.close)
+        candidates.push({ index: i, strength: Math.min(100, (upper / minBody) * 15) })
+        break
+      }
+
+      case 'marubozu': {
+        if (!isMarubozu(c)) break
+        const body  = c.close - c.open
+        const range = c.high - c.low
+        candidates.push({ index: i, strength: Math.min(100, (body / range) * 100) })
         break
       }
     }
