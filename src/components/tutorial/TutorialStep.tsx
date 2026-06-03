@@ -631,21 +631,42 @@ export function TutorialStep() {
     </div>
   )
 
+  // 단계 수가 15를 초과하면 dot 대신 얇은 프로그레스 바 표시
+  const manySteps = steps.length > 15
+
   const pcDotRow = (
     <div className="flex items-center justify-between px-4 pt-3.5 pb-1">
-      <div className="flex gap-[3px] items-center">
-        {steps.map((_, i) => (
-          <div key={i} className={clsx(
-            'rounded-full transition-all duration-300',
-            i < currentIndex   ? 'w-[5px] h-[5px] bg-navi-action/60' :
-            i === currentIndex ? 'w-2 h-2 bg-navi-action'             :
-            'w-[5px] h-[5px] bg-navi-border2'
-          )} />
-        ))}
-      </div>
-      <span className="text-[10px] tabular-nums ml-2 shrink-0 text-quiet-45">
-        {currentIndex + 1} / {steps.length}
-      </span>
+      {manySteps ? (
+        /* 긴 레슨: 프로그레스 바 */
+        <div className="flex-1 flex items-center gap-2.5">
+          <div className="flex-1 h-[3px] bg-navi-border2 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-navi-action rounded-full transition-all duration-300"
+              style={{ width: `${((currentIndex + 1) / steps.length) * 100}%` }}
+            />
+          </div>
+          <span className="text-[10px] tabular-nums shrink-0 text-quiet-45">
+            {currentIndex + 1} / {steps.length}
+          </span>
+        </div>
+      ) : (
+        /* 짧은 레슨: 기존 dot 방식 */
+        <>
+          <div className="flex gap-[3px] items-center">
+            {steps.map((_, i) => (
+              <div key={i} className={clsx(
+                'rounded-full transition-all duration-300',
+                i < currentIndex   ? 'w-[5px] h-[5px] bg-navi-action/60' :
+                i === currentIndex ? 'w-2 h-2 bg-navi-action'             :
+                'w-[5px] h-[5px] bg-navi-border2'
+              )} />
+            ))}
+          </div>
+          <span className="text-[10px] tabular-nums ml-2 shrink-0 text-quiet-45">
+            {currentIndex + 1} / {steps.length}
+          </span>
+        </>
+      )}
     </div>
   )
 

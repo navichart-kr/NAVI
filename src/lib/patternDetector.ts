@@ -164,6 +164,7 @@ function isMarubozu(c: CandleData): boolean {
 export function findBestCandlePattern(
   data: CandleData[],
   type: PatternType,
+  preferOutcome?: 'up' | 'down' | 'sideways',
 ): PatternLocation | null {
   interface Candidate {
     index: number
@@ -243,16 +244,28 @@ export function findBestCandlePattern(
   }
 
   if (!candidates.length) return null
-  candidates.sort((a, b) => b.strength - a.strength)
-  const best = candidates[0]
 
-  return {
-    candleIndex:     best.index,
-    prevCandleIndex: best.prevIndex,
-    windowFrom:      Math.max(0, best.index - CONTEXT),
-    windowTo:        Math.min(data.length - 1, best.index + CONTEXT),
-    outcome:         getOutcome(data, best.index),
+  const buildLocation = (c: Candidate) => ({
+    candleIndex:     c.index,
+    prevCandleIndex: c.prevIndex,
+    windowFrom:      Math.max(0, c.index - CONTEXT),
+    windowTo:        Math.min(data.length - 1, c.index + CONTEXT),
+    outcome:         getOutcome(data, c.index),
+  })
+
+  // preferOutcome 일치 후보 우선 — 망치형 = 실제 상승, 유성형 = 실제 하락 등
+  // 교육 효과 극대화: 신호가 실제로 적중한 사례 우선 선택
+  if (preferOutcome) {
+    const matching = candidates.filter(c => getOutcome(data, c.index) === preferOutcome)
+    if (matching.length > 0) {
+      matching.sort((a, b) => b.strength - a.strength)
+      return buildLocation(matching[0])
+    }
   }
+
+  // 일치 후보 없음 → 강도(strength) 기준 상위 패턴
+  candidates.sort((a, b) => b.strength - a.strength)
+  return buildLocation(candidates[0])
 }
 
 /* ─── 퍼블릭 API: 거래량 패턴 ────────────────────── */

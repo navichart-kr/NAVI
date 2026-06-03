@@ -55,6 +55,10 @@ interface ChartState {
    */
   highlightViewportBox: { left: number; top: number; right: number; bottom: number; width: number; height: number } | null
   setHighlightViewportBox: (box: { left: number; top: number; right: number; bottom: number; width: number; height: number } | null) => void
+
+  /** 거래량 서브차트 표시 여부 (사용자 수동 토글) */
+  showVolume:   boolean
+  toggleVolume: () => void
 }
 
 export const useChartStore = create<ChartState>((set) => ({
@@ -93,4 +97,7 @@ export const useChartStore = create<ChartState>((set) => ({
 
   highlightViewportBox:    null,
   setHighlightViewportBox: (highlightViewportBox) => set({ highlightViewportBox }),
+
+  showVolume:    false,
+  toggleVolume:  () => set((s) => ({ showVolume: !s.showVolume })),
 }))

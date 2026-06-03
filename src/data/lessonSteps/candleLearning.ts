@@ -155,7 +155,7 @@ export function buildCandleLearningSteps(data: CandleData[]): TutorialStep[] {
   const steps: TutorialStep[] = []
 
   for (const cfg of PATTERN_CONFIGS) {
-    const loc = findBestCandlePattern(data, cfg.key)
+    const loc = findBestCandlePattern(data, cfg.key, cfg.expectedDir)
     if (!loc) continue  // 패턴을 데이터에서 찾지 못하면 건너뜀
 
     const hlPre  = makeHL(loc, false)
@@ -175,25 +175,15 @@ export function buildCandleLearningSteps(data: CandleData[]): TutorialStep[] {
       ? `${outcomeTxt} 이 경우 ${cfg.name} 패턴이 그대로 적용됐어요.`
       : `${outcomeTxt} 이번엔 패턴의 일반적 방향과 달랐어요. 패턴은 확률을 높이는 신호이지 확신이 아니에요.`
 
-    // ── Step A: 도입 ───────────────────────────────────────
+    // ── Step B: 패턴명 (첫 단계 — learningHighlightOnEnter 포함) ──
     steps.push({
-      id:                       `${cfg.key}-a-intro`,
+      id:                       `${cfg.key}-b-name`,
       targetSelector:           '#chart-area',
       position:                 'top',
-      title:                    '이 구간의 캔들을 보세요.',
-      body:                     `차트가 자동으로 이 구간으로 이동했어요.\n특별한 모양의 캔들이 하이라이트 되어 있어요.`,
+      title:                    `이 캔들은 ${cfg.name}(${cfg.engName})이에요.`,
+      body:                     cfg.shape,
       actionRequired:           'free',
       learningHighlightOnEnter: hlPre,
-    })
-
-    // ── Step B: 패턴명 ─────────────────────────────────────
-    steps.push({
-      id:             `${cfg.key}-b-name`,
-      targetSelector: '#chart-area',
-      position:       'top',
-      title:          `이 캔들은 ${cfg.name}(${cfg.engName})이에요.`,
-      body:           cfg.shape,
-      actionRequired: 'free',
     })
 
     // ── Step C: 시장 심리 ──────────────────────────────────

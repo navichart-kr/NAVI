@@ -130,7 +130,7 @@ export function VolumeChart() {
   }, [isDark])
 
   return (
-    <div className="mt-1 border-t border-navi-border/50">
+    <div id="volume-chart" className="mt-1 border-t border-navi-border/50">
       <p className="px-3 pt-1.5 pb-0.5 text-[9px] font-bold tracking-[0.06em] uppercase text-navi-muted">
         거래량
       </p>

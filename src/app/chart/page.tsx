@@ -24,7 +24,7 @@ import Link from 'next/link'
 
 function ChartPageInner() {
   const { hasCompletedOnce, start, startLesson, isActive, currentLessonKey } = useTutorialStore()
-  const { activeIndicators, drawingTool } = useChartStore()
+  const { activeIndicators, drawingTool, showVolume: chartShowVolume } = useChartStore()
   const { markIndicator, markDrawing } = useLearnStore()
   const searchParams = useSearchParams()
   const prevInds = useRef(new Set<string>())
@@ -34,8 +34,8 @@ function ChartPageInner() {
 
   const showRSI    = activeIndicators.has('rsi')
   const showMACD   = activeIndicators.has('macd')
-  // 거래량 학습 활성 시 VolumeChart 표시
-  const showVolume = isActive && currentLessonKey === 'volume-learning'
+  // 거래량 학습 활성 시 또는 사용자가 수동으로 켰을 때 VolumeChart 표시
+  const showVolume = chartShowVolume || (isActive && currentLessonKey === 'volume-learning')
 
   /* ── 튜토리얼 시작 조건 ─────────────────────────────────────
      · ?onboard=1 쿼리: /tutorial 페이지에서 명시적으로 시작

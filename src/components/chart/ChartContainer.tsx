@@ -359,11 +359,19 @@ export function ChartContainer() {
 
     const { candleIndex, prevCandleIndex, windowFrom, windowTo } = learningHighlight
 
-    // 줌: windowFrom ~ windowTo (+ 여백)
+    // 줌: volume / candle 모두 동일하게 해당 구간으로 이동
     chart.timeScale().setVisibleLogicalRange({
       from: Math.max(0, windowFrom - 2),
       to:   Math.min(candleData.length - 1, windowTo + 2),
     })
+
+    // volume 타입: 캔들 amber 박스 불필요 — 거래량 차트(#volume-chart)가 spotlight 담당
+    if (learningHighlight.type === 'volume') {
+      setCandleHL(null)
+      useChartStore.getState().setHighlightViewportBox(null)
+      computeCandleHLRef.current = () => {}   // pan/zoom 시에도 재계산 안 함
+      return
+    }
 
     // 캔들 박스 계산 함수 (줌/팬 시에도 호출됨)
     const compute = () => {
