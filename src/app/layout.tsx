@@ -8,10 +8,14 @@ const SITE_URL = 'https://navichart.co.kr'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: 'NAVIchart | 주식 차트 분석 학습 플랫폼',
+  title: '나비차트(NAVIchart) | 주식 차트 분석 학습 플랫폼',
   description:
-    '캔들패턴, 거래량, RSI, MACD, 볼린저밴드, 피보나치를 실제 차트로 배우는 인터랙티브 학습 플랫폼',
+    '나비차트(NAVIchart)는 캔들패턴, 거래량, RSI, MACD, 볼린저밴드, 피보나치를 실제 차트로 배우는 인터랙티브 주식 공부 플랫폼이에요.',
   keywords: [
+    '나비차트',
+    '나비 차트',
+    'NAVIchart',
+    'navichart',
     '주식차트',
     '차트분석',
     '기술적분석',
@@ -26,17 +30,17 @@ export const metadata: Metadata = {
     '차트교육',
   ],
   openGraph: {
-    title: 'NAVIchart | 주식 차트 분석 학습 플랫폼',
+    title: '나비차트(NAVIchart) | 주식 차트 분석 학습 플랫폼',
     description:
-      '캔들패턴, 거래량, RSI, MACD, 볼린저밴드, 피보나치를 실제 차트로 배우는 인터랙티브 학습 플랫폼',
+      '나비차트(NAVIchart)는 캔들패턴, 거래량, RSI, MACD, 볼린저밴드, 피보나치를 실제 차트로 배우는 인터랙티브 주식 공부 플랫폼이에요.',
     url: SITE_URL,
-    siteName: 'NAVIchart',
+    siteName: '나비차트',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'NAVIchart | 주식 차트 분석 학습 플랫폼',
+        alt: '나비차트(NAVIchart) | 주식 차트 분석 학습 플랫폼',
       },
     ],
     locale: 'ko_KR',
@@ -44,9 +48,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'NAVIchart | 주식 차트 분석 학습 플랫폼',
+    title: '나비차트(NAVIchart) | 주식 차트 분석 학습 플랫폼',
     description:
-      '캔들패턴, 거래량, RSI, MACD, 볼린저밴드, 피보나치를 실제 차트로 배우는 인터랙티브 학습 플랫폼',
+      '나비차트(NAVIchart)는 캔들패턴, 거래량, RSI, MACD, 볼린저밴드, 피보나치를 실제 차트로 배우는 인터랙티브 주식 공부 플랫폼이에요.',
     images: ['/og-image.png'],
   },
   verification: {
@@ -93,13 +97,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'WebSite',
-              name: 'NAVIchart',
+              name: '나비차트',
+              alternateName: ['NAVIchart', 'navichart', '나비 차트'],
               url: SITE_URL,
               description:
-                '캔들패턴, 거래량, RSI, MACD, 볼린저밴드, 피보나치를 실제 차트로 배우는 인터랙티브 학습 플랫폼',
+                '나비차트(NAVIchart)는 캔들패턴, 거래량, RSI, MACD, 볼린저밴드, 피보나치를 실제 차트로 배우는 인터랙티브 주식 공부 플랫폼이에요.',
               publisher: {
                 '@type': 'Organization',
-                name: 'NAVIchart',
+                name: '나비차트',
+                alternateName: ['NAVIchart', 'navichart'],
                 url: SITE_URL,
                 logo: {
                   '@type': 'ImageObject',
