@@ -8,7 +8,7 @@ export const tutorialSteps: TutorialStep[] = [
   {
     id:             'candle-click',
     targetSelector: '#chart-area',
-    position:       'right',
+    position:       'bottom',
     title:          '이 막대 하나가 하루예요',
     body:           '초록 막대는 오른 날, 빨간 막대는 내린 날이에요. 막대의 길이가 그날의 가격 변동폭이에요.\n\n직접 클릭하면 그날의 시가·고가·저가·종가를 확인할 수 있어요.',
     mission:        '차트에서 아무 캔들이나 클릭해보세요',

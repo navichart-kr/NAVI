@@ -56,7 +56,7 @@ function calcCardPos(hl: HL, preferred: string, cardW: number, cardH: number): C
     right:  { top: clampT(cy - cardH / 2), left: hl.right  + M },
     left:   { top: clampT(cy - cardH / 2), left: hl.left - cardW - M },
   }
-  const order = ([preferred, 'top', 'right', 'left', 'bottom'] as Side[])
+  const order = ([preferred, 'bottom', 'top', 'right', 'left'] as Side[])
     .filter((s, i, a) => a.indexOf(s) === i)
   for (const side of order) {
     const c = v[side]; if (!c) continue
