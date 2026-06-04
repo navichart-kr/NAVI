@@ -4,9 +4,34 @@ import './globals.css'
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics'
 import { PostHogProvider }  from '@/components/analytics/PostHogProvider'
 
+const SITE_URL = 'https://navichart.co.kr'
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: 'NAVI Chart — 처음 시작하는 주식 차트',
   description: '복잡한 차트, 이제 쉽게 읽어요. 초보 투자자를 위한 주식 차트 분석 서비스.',
+  openGraph: {
+    title: 'NAVI Chart — 처음 시작하는 주식 차트',
+    description: '복잡한 차트, 이제 쉽게 읽어요. 초보 투자자를 위한 주식 차트 분석 서비스.',
+    url: SITE_URL,
+    siteName: 'NAVI Chart',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'NAVI Chart — 처음 시작하는 주식 차트',
+      },
+    ],
+    locale: 'ko_KR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'NAVI Chart — 처음 시작하는 주식 차트',
+    description: '복잡한 차트, 이제 쉽게 읽어요. 초보 투자자를 위한 주식 차트 분석 서비스.',
+    images: ['/og-image.png'],
+  },
   verification: {
     google: '7WIZTSNBgaKs_x8iiWH6K6AkxW2E-ZhGVvpzYqO9mQo',
     other: {
@@ -44,6 +69,30 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        {/* JSON-LD 구조화 데이터 — Google 로고·조직 인식용 */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'NAVI Chart',
+              url: SITE_URL,
+              description: '복잡한 차트, 이제 쉽게 읽어요. 초보 투자자를 위한 주식 차트 분석 서비스.',
+              publisher: {
+                '@type': 'Organization',
+                name: 'NAVI Chart',
+                url: SITE_URL,
+                logo: {
+                  '@type': 'ImageObject',
+                  url: `${SITE_URL}/icon.png`,
+                  width: 800,
+                  height: 800,
+                },
+              },
+            }),
+          }}
+        />
       </head>
       <body suppressHydrationWarning>
 
