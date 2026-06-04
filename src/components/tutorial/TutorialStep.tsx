@@ -18,8 +18,10 @@ const CARD_MARGIN = 14
 
 /* ── Types ──────────────────────────────────────────────────── */
 type CardMode = 'idle' | 'judgment' | 'feedback' | 'test'
-interface HL { top:number; left:number; width:number; height:number; bottom:number; right:number }
+type Side     = 'top' | 'right' | 'left' | 'bottom'
+interface HL      { top:number; left:number; width:number; height:number; bottom:number; right:number }
 interface CardPos { top:number; left:number }
+interface CalcResult { pos: CardPos; side: Side }
 
 /* ── 지표 이름 (모바일 인라인 버튼 레이블) ──────────────────── */
 const INDICATOR_NAMES: Partial<Record<IndicatorSlug, string>> = {
@@ -42,25 +44,32 @@ function getCardW() {
   return typeof window === 'undefined' ? CARD_W : Math.min(CARD_W, window.innerWidth - 16)
 }
 
-function calcCardPos(hl: HL, preferred: string, cardW: number, cardH: number): CardPos {
+function calcCardPos(hl: HL, preferred: string, cardW: number, cardH: number): CalcResult {
   const vw = window.innerWidth, vh = window.innerHeight
   const M  = CARD_MARGIN
   const cx = hl.left + hl.width / 2, cy = hl.top + hl.height / 2
   const clampL = (x: number) => Math.max(8, Math.min(x, vw - cardW - 8))
   const clampT = (y: number) => Math.max(56, Math.min(y, vh - cardH - 8))
-  const v: Record<string, CardPos> = {
+  const v: Record<Side, CardPos> = {
     top:    { top: hl.top - cardH - M,    left: clampL(cx - cardW / 2) },
     bottom: { top: hl.bottom + M,          left: clampL(cx - cardW / 2) },
     right:  { top: clampT(cy - cardH / 2), left: hl.right  + M },
     left:   { top: clampT(cy - cardH / 2), left: hl.left - cardW - M },
   }
-  const order = [preferred, 'top', 'right', 'left', 'bottom'].filter((v, i, a) => a.indexOf(v) === i)
-  for (const pos of order) {
-    const c = v[pos]; if (!c) continue
-    if (c.top >= 56 && c.top + cardH <= vh - 8 && c.left >= 8 && c.left + cardW <= vw - 8) return c
+  const order = ([preferred, 'top', 'right', 'left', 'bottom'] as Side[])
+    .filter((s, i, a) => a.indexOf(s) === i)
+  for (const side of order) {
+    const c = v[side]; if (!c) continue
+    if (c.top >= 56 && c.top + cardH <= vh - 8 && c.left >= 8 && c.left + cardW <= vw - 8) {
+      return { pos: c, side }
+    }
   }
-  const fb = v[preferred] ?? v.bottom
-  return { top: Math.max(56, Math.min(fb.top, vh - cardH - 8)), left: Math.max(8, Math.min(fb.left, vw - cardW - 8)) }
+  const fallbackKey = (preferred in v ? preferred : 'bottom') as Side
+  const fb = v[fallbackKey] ?? v.bottom
+  return {
+    pos: { top: Math.max(56, Math.min(fb.top, vh - cardH - 8)), left: Math.max(8, Math.min(fb.left, vw - cardW - 8)) },
+    side: fallbackKey,
+  }
 }
 
 /* ── scrollToSel — retry-safe 스크롤 헬퍼 ──────────────────
@@ -303,6 +312,7 @@ export function TutorialStep() {
   const [hl,        setHl]        = useState<HL | null>(null)
   const [showCard,  setShowCard]  = useState(false)
   const [cardPos,   setCardPos]   = useState<CardPos | null>(null)
+  const [cardSide,  setCardSide]  = useState<Side>('top')
   const [bodyOpen,  setBodyOpen]  = useState(false)   // 모바일 더보기
 
   const cardRef = useRef<HTMLDivElement>(null)
@@ -416,32 +426,25 @@ export function TutorialStep() {
     if (cardH === 0) return
     const vw = window.innerWidth, vh = window.innerHeight
 
-    // 캔들 학습 중: 뷰포트 박스 기반으로 카드 자동 배치 (floatSide 무시)
+    // 캔들 학습 중: 뷰포트 박스 기반으로 카드 자동 배치
     const vBox = useChartStore.getState().highlightViewportBox
     if (vBox) {
       if (hlRect) {
-        setCardPos(calcCardPos(hlRect, currentStep.position ?? 'top', cardW, cardH))
+        const r = calcCardPos(hlRect, currentStep.position ?? 'top', cardW, cardH)
+        setCardPos(r.pos); setCardSide(r.side)
       } else {
         // 캔들이 뷰포트 밖 → 카드를 상단 중앙에 배치
-        setCardPos({ top: 72, left: Math.max(8, (vw - cardW) / 2) })
+        setCardPos({ top: 72, left: Math.max(8, (vw - cardW) / 2) }); setCardSide('top')
       }
       return
     }
 
-    if (currentStep.floatSide) {
-      const M = 16
-      setCardPos(
-        vw >= 768
-          ? { left: vw - cardW - M, top: Math.max(56, vh - cardH - M) }
-          : { left: Math.max(M, (vw - cardW) / 2), top: Math.max(56, vh - cardH - M) }
-      )
-      return
-    }
     if (!hlRect) {
-      setCardPos({ top: 72, left: Math.max(8, (vw - cardW) / 2) })
+      setCardPos({ top: 72, left: Math.max(8, (vw - cardW) / 2) }); setCardSide('top')
       return
     }
-    setCardPos(calcCardPos(hlRect, currentStep.position, cardW, cardH))
+    const r = calcCardPos(hlRect, currentStep.position, cardW, cardH)
+    setCardPos(r.pos); setCardSide(r.side)
   }, [currentStep, showCard, computeHL])
 
   /* ── Step 변경 ──────────────────────────────────────── */
@@ -1182,6 +1185,57 @@ export function TutorialStep() {
                 maxWidth: 'calc(100vw - 16px)',
               }}
             >
+              {/* 카드 → 하이라이트 연결 화살표 (PC, highlight 있을 때만) */}
+              {hl && cardPos && (() => {
+                const S   = 7   // 화살표 반폭 (전체 폭 14px, 높이 7px)
+                const cW  = getCardW()
+                const cH  = cardRef.current?.offsetHeight ?? 0
+                if (cH === 0) return null
+                const hlCx  = hl.left + hl.width  / 2
+                const hlCy  = hl.top  + hl.height / 2
+                const BD    = 'rgb(var(--navi-border))'
+                const BG    = 'rgb(var(--navi-surface))'
+                const base: React.CSSProperties = { position: 'absolute', width: 0, height: 0 }
+
+                if (cardSide === 'top') {
+                  const ax = Math.max(16, Math.min(hlCx - cardPos.left - S, cW - 32))
+                  return (
+                    <>
+                      <div style={{ ...base, bottom: -S, left: ax, borderLeft: `${S}px solid transparent`, borderRight: `${S}px solid transparent`, borderTop: `${S}px solid ${BD}` }} />
+                      <div style={{ ...base, bottom: -(S-1), left: ax+1, borderLeft: `${S-1}px solid transparent`, borderRight: `${S-1}px solid transparent`, borderTop: `${S-1}px solid ${BG}` }} />
+                    </>
+                  )
+                }
+                if (cardSide === 'bottom') {
+                  const ax = Math.max(16, Math.min(hlCx - cardPos.left - S, cW - 32))
+                  return (
+                    <>
+                      <div style={{ ...base, top: -S, left: ax, borderLeft: `${S}px solid transparent`, borderRight: `${S}px solid transparent`, borderBottom: `${S}px solid ${BD}` }} />
+                      <div style={{ ...base, top: -(S-1), left: ax+1, borderLeft: `${S-1}px solid transparent`, borderRight: `${S-1}px solid transparent`, borderBottom: `${S-1}px solid ${BG}` }} />
+                    </>
+                  )
+                }
+                if (cardSide === 'right') {
+                  const ay = Math.max(16, Math.min(hlCy - cardPos.top - S, cH - 32))
+                  return (
+                    <>
+                      <div style={{ ...base, left: -S, top: ay, borderTop: `${S}px solid transparent`, borderBottom: `${S}px solid transparent`, borderRight: `${S}px solid ${BD}` }} />
+                      <div style={{ ...base, left: -(S-1), top: ay+1, borderTop: `${S-1}px solid transparent`, borderBottom: `${S-1}px solid transparent`, borderRight: `${S-1}px solid ${BG}` }} />
+                    </>
+                  )
+                }
+                if (cardSide === 'left') {
+                  const ay = Math.max(16, Math.min(hlCy - cardPos.top - S, cH - 32))
+                  return (
+                    <>
+                      <div style={{ ...base, right: -S, top: ay, borderTop: `${S}px solid transparent`, borderBottom: `${S}px solid transparent`, borderLeft: `${S}px solid ${BD}` }} />
+                      <div style={{ ...base, right: -(S-1), top: ay+1, borderTop: `${S-1}px solid transparent`, borderBottom: `${S-1}px solid transparent`, borderLeft: `${S-1}px solid ${BG}` }} />
+                    </>
+                  )
+                }
+                return null
+              })()}
+
               <motion.div
                 key={`card-${currentStep.id}`}
                 initial={{ opacity: 0, scale: 0.93, y: 10 }}

@@ -31,8 +31,7 @@ export const fibonacciSteps: TutorialStep[] = [
   {
     id:               'fib-adv-observe',
     targetSelector:   '#chart-area',
-    position:         'bottom',
-    floatSide:        'bottom-right',   // 차트를 가리지 않음
+    position:         'right',
     focusBarsFromEnd: 55,
     title:            '실제 반등 사례를 확인해봐요',
     body:             'NVDA는 이 구간에서 $164 → $217까지 약 +31% 강하게 상승했어요.\n\n이후 조정이 와서 잠시 하락했다가 다시 반등했어요.\n\n차트를 보며 확인해봐요:\n• 상승이 시작된 저점(왼쪽 아래)은 어디인가요?\n• 상승이 멈춘 고점(오른쪽 위)은 어디인가요?\n• 고점 이후 가격이 어디서 멈추고 반등했나요?\n\n이 세 지점이 다음 단계의 핵심이에요.',
@@ -45,7 +44,6 @@ export const fibonacciSteps: TutorialStep[] = [
     targetSelector:       '#drawing-tools-card',
     mobileTargetSelector: '#drawing-toolbar',
     position:             'top',
-    floatSide:            'bottom-right',   // 차트 & 마커 가림 방지
     focusBarsFromEnd:     55,
     clearDrawingsOnEnter: true,
     fibGuide: {
@@ -69,8 +67,7 @@ export const fibonacciSteps: TutorialStep[] = [
   {
     id:               'fib-adv-explain',
     targetSelector:   '#chart-area',
-    position:         'bottom',
-    floatSide:        'bottom-right',
+    position:         'right',
     focusBarsFromEnd: 55,
     title:            '각 레벨의 의미와 실제 반응을 확인해봐요',
     body:             '이 구간(저점 $164 → 고점 $217)에 피보나치를 적용하면:\n\n• 23.6% ≈ $204 — 가격이 잠깐 머문 구간\n• 38.2% ≈ $197 — 강한 조정 후 반등 구간\n• 50.0% ≈ $191 — 심리적 중간 지점\n• 61.8% ≈ $184 — 황금 비율, 깊은 조정 구간\n\n실제로 가격이 $197 부근에서 멈추고 다시 상승했어요.\n어느 레벨에서 반등이 시작됐는지 차트를 보며 확인해봐요.',
@@ -86,8 +83,7 @@ export const fibonacciSteps: TutorialStep[] = [
   {
     id:               'fib-adv-levels',
     targetSelector:   '#chart-area',
-    position:         'bottom',
-    floatSide:        'bottom-right',
+    position:         'right',
     focusBarsFromEnd: 55,
     title:            '이 차트에서 가격은 어느 레벨에서 반등했을까요?',
     body:             '앞에서 확인한 차트를 떠올려봐요.\n\n고점 $217에서 조정 후 가격이 멈추고 반등한 피보나치 레벨은 어디일까요?\n\n힌트: 반등이 시작된 저점은 $194~$197 부근이에요.',
@@ -130,8 +126,7 @@ export const fibonacciSteps: TutorialStep[] = [
   {
     id:               'fib-adv-complete',
     targetSelector:   '#chart-area',
-    position:         'bottom',
-    floatSide:        'bottom-right',
+    position:         'right',
     focusBarsFromEnd: 55,
     title:            '피보나치 심화 완료',
     body:             '실제 NVDA 차트에서 피보나치를 직접 그리고, 38.2% 반등을 눈으로 확인했어요.\n\n핵심 정리:\n• 강한 추세 → 38.2%에서 먼저 반등\n• 중간 추세 → 50%에서 지지\n• 약한 추세 → 61.8%까지 하락 후 반등\n• 더 깊이 내려갈수록 → 추세 전환 경고\n\n실전 챌린지에서 피보나치를 활용해봐요!',

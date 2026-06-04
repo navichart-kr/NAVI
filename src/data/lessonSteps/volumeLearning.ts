@@ -256,7 +256,6 @@ export function buildVolumeLearningSteps(data: CandleData[]): TutorialStep[] {
   steps.push({
     id:                       'volume-complete',
     targetSelector:           '#chart-area',
-    floatSide:                'bottom-right',
     position:                 'top',
     title:                    '거래량 학습 완료!',
     body:                     '거래량의 기본 개념을 모두 배웠어요.\n\n핵심 요약:\n• 거래량 + 상승 = 강한 매수세\n• 거래량 + 하락 = 강한 매도세\n• 거래량 없는 움직임 = 신뢰도 낮음',
