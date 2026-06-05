@@ -38,16 +38,16 @@ export const fibonacciSteps: TutorialStep[] = [
     actionRequired:   'free',
   },
 
-  // ── STEP 3  직접 피보나치 작도 (가이드 마커) ─────────────
-  // 저점(좌하단)·고점(우상단)이 대각선 위치 → 어느 쪽도 가리지 않으려면
-  // 분석도구 카드(좌열)를 기준으로 오른쪽(우하단 도구 영역)에 카드를 배치
+  // ── STEP 3  직접 피보나치 작도 (자동 활성화) ─────────────
+  // activateDrawingToolOnEnter: 'fibonacci' 로 그리기 모드 자동 진입
+  // 사용자는 ① 저점 → ② 고점 두 번만 클릭하면 됨
   {
-    id:                   'fib-adv-draw',
-    targetSelector:       '#analysis-tools-card',
-    mobileTargetSelector: '#drawing-toolbar',
-    position:             'right',
-    focusBarsFromEnd:     55,
-    clearDrawingsOnEnter: true,
+    id:                         'fib-adv-draw',
+    targetSelector:             '#chart-area',
+    position:                   'bottom',
+    focusBarsFromEnd:           55,
+    clearDrawingsOnEnter:       true,
+    activateDrawingToolOnEnter: 'fibonacci',
     fibGuide: {
       lowDate:   '2026-03-30',
       lowPrice:  356.28,
@@ -55,13 +55,13 @@ export const fibonacciSteps: TutorialStep[] = [
       highPrice: 466.32,
     },
     title:          '피보나치를 직접 그어봐요',
-    body:           '차트를 보면 초록색 ① 저점과 주황색 ② 고점 마커가 표시돼 있어요.\n\n작도 도구 → 피보나치 버튼을 클릭한 뒤\n그 순서대로 클릭해봐요:\n① 저점 클릭 → ② 고점 클릭\n\n두 번 클릭하면 피보나치 레벨이 자동으로 그려져요.',
+    body:           '차트를 보면 초록색 ① 저점과 주황색 ② 고점 마커가 표시돼 있어요.\n\n피보나치 그리기 모드가 자동으로 활성화됐어요.\n화면 상단 안내를 따라 두 번만 클릭해봐요:\n① 저점 클릭 → ② 고점 클릭\n\n두 번 클릭하면 피보나치 레벨이 자동으로 그려져요.',
     tips: [
-      '화면 상단에 "① 저점을 클릭하세요" 안내가 뜰 거예요',
-      '저점 클릭 후 "② 고점을 클릭하세요"로 바뀌어요',
+      '화면 상단에 "① 상승 시작 저점을 클릭하세요" 안내가 떠 있어요',
+      '저점 클릭 후 "② 이제 고점을 클릭해서 완성하세요"로 바뀌어요',
       '두 점을 찍으면 38.2% · 50% · 61.8% 레벨이 표시돼요',
     ],
-    mission:        '피보나치를 직접 그어봐요 (안 그려도 다음으로 넘어갈 수 있어요)',
+    mission:        '① 저점 → ② 고점 순서로 클릭해봐요 (안 그려도 다음으로 넘어갈 수 있어요)',
     actionRequired: 'free',
   },
 

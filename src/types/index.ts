@@ -57,6 +57,12 @@ export interface TutorialStep {
   clearDrawingsOnEnter?: boolean
 
   /**
+   * 이 단계 진입 시 드로잉 툴을 자동으로 활성화
+   * 단계 이동 시 항상 'none'으로 초기화된 후 이 값이 적용된다
+   */
+  activateDrawingToolOnEnter?: 'fibonacci' | 'trendline'
+
+  /**
    * 모바일 전용 targetSelector (PC는 기존 targetSelector 사용)
    * 예: '#mobile-toolbar-analysis', '#mobile-indicator-links'
    */

@@ -168,6 +168,12 @@ export const useTutorialStore = create<TutorialState>()(
           clearDrawings()
         }
 
+        // 다음 단계 진입 전: 드로잉 툴 항상 초기화 후 필요 시 활성화
+        useChartStore.getState().setDrawingTool('none')
+        if (nextStep.activateDrawingToolOnEnter) {
+          useChartStore.getState().setDrawingTool(nextStep.activateDrawingToolOnEnter)
+        }
+
         // 다음 단계 진입 전: learningHighlightOnEnter 처리
         if (nextStep.learningHighlightOnEnter !== undefined) {
           useChartStore.getState().setLearningHighlight(nextStep.learningHighlightOnEnter)
@@ -216,6 +222,12 @@ export const useTutorialStore = create<TutorialState>()(
           useChartStore.getState().setLearningHighlight(prevStep.learningHighlightOnEnter)
         }
 
+        // 이전 단계 진입 전: 드로잉 툴 항상 초기화 후 필요 시 활성화
+        useChartStore.getState().setDrawingTool('none')
+        if (prevStep.activateDrawingToolOnEnter) {
+          useChartStore.getState().setDrawingTool(prevStep.activateDrawingToolOnEnter)
+        }
+
         set({
           currentIndex:     prevIndex,
           currentStep:      prevStep,
@@ -235,10 +247,11 @@ export const useTutorialStore = create<TutorialState>()(
             tutorial_type: lessonType ?? 'lesson',
             step_number:   currentIndex + 1,
           })
-          // 레슨 건너뛰기: 기초 과정 완료 처리 안 함 + 지표·작도·학습하이라이트 초기화
+          // 레슨 건너뛰기: 기초 과정 완료 처리 안 함 + 지표·작도·드로잉툴·학습하이라이트 초기화
           const { activeIndicators, toggleIndicator } = useChartStore.getState()
           activeIndicators.forEach(slug => toggleIndicator(slug))
           useChartStore.getState().requestClearDrawings()
+          useChartStore.getState().setDrawingTool('none')
           useChartStore.getState().setLearningHighlight(null)
           set({ isActive: false, currentStep: null, showCompletionScreen: false, isLesson: false, currentLessonKey: null, steps: tutorialSteps, ...INITIAL_ACTION_STATE })
         } else {
@@ -289,7 +302,9 @@ export const useTutorialStore = create<TutorialState>()(
           })
         }
 
-        // 기존 학습 하이라이트 초기화
+        // 기존 작도·하이라이트·드로잉 툴 초기화
+        useChartStore.getState().requestClearDrawings()
+        useChartStore.getState().setDrawingTool('none')
         useChartStore.getState().setLearningHighlight(null)
 
         set({
@@ -362,6 +377,7 @@ export const useTutorialStore = create<TutorialState>()(
         const { activeIndicators, toggleIndicator } = useChartStore.getState()
         activeIndicators.forEach(slug => toggleIndicator(slug))
         useChartStore.getState().requestClearDrawings()
+        useChartStore.getState().setDrawingTool('none')
         useChartStore.getState().setLearningHighlight(null)
         set({
           isActive:             false,
