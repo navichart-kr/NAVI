@@ -41,6 +41,15 @@ interface ChartState {
   requestClearDrawings:   () => void
 
   /**
+   * drawingToolAfterClear
+   * requestClearDrawings() 이후 ChartContainer effect 완료 시 적용할 도구.
+   * clearDrawingsOnEnter + activateDrawingToolOnEnter 동시 사용 시 비동기 덮어쓰기 방지.
+   * null = 클리어 후 'none'으로 리셋 (기본 동작)
+   */
+  drawingToolAfterClear:    DrawingTool | null
+  setDrawingToolAfterClear: (t: DrawingTool | null) => void
+
+  /**
    * learningHighlight — 캔들/거래량 학습 시 차트 줌 + 캔들 강조
    * tutorialStore 가 learningHighlightOnEnter 단계 진입 시 set/clear 한다.
    */
@@ -89,8 +98,10 @@ export const useChartStore = create<ChartState>((set) => ({
   setDrawingTool: (drawingTool) => set({ drawingTool, drawingStep: 0 }),
   setDrawingStep: (drawingStep) => set({ drawingStep }),
 
-  clearDrawingsSignal:  0,
-  requestClearDrawings: () => set((s) => ({ clearDrawingsSignal: s.clearDrawingsSignal + 1 })),
+  clearDrawingsSignal:      0,
+  requestClearDrawings:     () => set((s) => ({ clearDrawingsSignal: s.clearDrawingsSignal + 1 })),
+  drawingToolAfterClear:    null,
+  setDrawingToolAfterClear: (drawingToolAfterClear) => set({ drawingToolAfterClear }),
 
   learningHighlight:    null,
   setLearningHighlight: (learningHighlight) => set({ learningHighlight }),

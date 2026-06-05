@@ -164,14 +164,18 @@ export const useTutorialStore = create<TutorialState>()(
         }
 
         // 다음 단계 진입 전: clearDrawingsOnEnter 처리
+        // activateDrawingToolOnEnter 가 함께 있으면 ChartContainer effect 이후 적용되도록 예약
         if (nextStep.clearDrawingsOnEnter) {
+          if (nextStep.activateDrawingToolOnEnter) {
+            useChartStore.getState().setDrawingToolAfterClear(nextStep.activateDrawingToolOnEnter)
+          }
           clearDrawings()
-        }
-
-        // 다음 단계 진입 전: 드로잉 툴 항상 초기화 후 필요 시 활성화
-        useChartStore.getState().setDrawingTool('none')
-        if (nextStep.activateDrawingToolOnEnter) {
-          useChartStore.getState().setDrawingTool(nextStep.activateDrawingToolOnEnter)
+        } else {
+          // clearDrawings 없을 때는 직접 설정
+          useChartStore.getState().setDrawingTool('none')
+          if (nextStep.activateDrawingToolOnEnter) {
+            useChartStore.getState().setDrawingTool(nextStep.activateDrawingToolOnEnter)
+          }
         }
 
         // 다음 단계 진입 전: learningHighlightOnEnter 처리

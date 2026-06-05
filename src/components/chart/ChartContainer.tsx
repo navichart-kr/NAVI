@@ -262,7 +262,15 @@ export function ChartContainer() {
     setFibLabels([])
     clearCanvas()
     setDrawingStep(0)
-    setDrawingTool('none')
+
+    // clearDrawings 이후 적용할 도구가 예약돼 있으면 그것을 사용, 없으면 'none'으로 리셋
+    const { drawingToolAfterClear, setDrawingToolAfterClear } = useChartStore.getState()
+    if (drawingToolAfterClear) {
+      setDrawingTool(drawingToolAfterClear)
+      setDrawingToolAfterClear(null)
+    } else {
+      setDrawingTool('none')
+    }
   }, [clearDrawingsSignal, clearCanvas, setDrawingStep, setDrawingTool])
 
   // ── 데이터 · 지표 동기화 ─────────────────────────────
