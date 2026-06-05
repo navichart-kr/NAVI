@@ -69,7 +69,7 @@ export const fibonacciSteps: TutorialStep[] = [
   {
     id:               'fib-adv-explain',
     targetSelector:   '#chart-area',
-    position:         'right',
+    position:         'bottom',
     focusBarsFromEnd: 55,
     title:            '각 레벨의 의미와 실제 반응을 확인해봐요',
     body:             '이 구간(저점 $356 → 고점 $466)에 피보나치를 적용하면:\n\n• 23.6% ≈ $440 — 가격이 잠깐 머문 구간\n• 38.2% ≈ $424 — 강한 조정 후 반등 구간\n• 50.0% ≈ $411 — 심리적 중간 지점\n• 61.8% ≈ $398 — 황금 비율, 깊은 조정 구간\n\n실제로 가격이 $424 부근에서 멈추고 다시 상승했어요.\n어느 레벨에서 반등이 시작됐는지 차트를 보며 확인해봐요.',
@@ -85,7 +85,7 @@ export const fibonacciSteps: TutorialStep[] = [
   {
     id:               'fib-adv-levels',
     targetSelector:   '#chart-area',
-    position:         'right',
+    position:         'bottom',
     focusBarsFromEnd: 55,
     title:            '이 차트에서 가격은 어느 레벨에서 반등했을까요?',
     body:             '앞에서 확인한 차트를 떠올려봐요.\n\n고점 $466에서 조정 후 가격이 멈추고 반등한 피보나치 레벨은 어디일까요?\n\n힌트: 반등이 시작된 저점은 $424 부근이에요.',
@@ -128,7 +128,7 @@ export const fibonacciSteps: TutorialStep[] = [
   {
     id:               'fib-adv-complete',
     targetSelector:   '#chart-area',
-    position:         'right',
+    position:         'bottom',
     focusBarsFromEnd: 55,
     title:            '피보나치 심화 완료',
     body:             '실제 MSFT 차트에서 피보나치를 직접 그리고, 38.2% 반등을 눈으로 확인했어요.\n\n핵심 정리:\n• 강한 추세 → 38.2%에서 먼저 반등\n• 중간 추세 → 50%에서 지지\n• 약한 추세 → 61.8%까지 하락 후 반등\n• 더 깊이 내려갈수록 → 추세 전환 경고\n\n실전 챌린지에서 피보나치를 활용해봐요!',
