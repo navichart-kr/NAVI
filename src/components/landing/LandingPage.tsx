@@ -184,10 +184,10 @@ function FeatureText({
       <motion.h2
         {...fadeUp(delay + 0.08)}
         style={{
-          fontSize:      'clamp(26px, 3.0vw, 40px)',
+          fontSize:      'clamp(30px, 3.4vw, 46px)',
           fontWeight:    900,
-          letterSpacing: '-0.03em',
-          lineHeight:    1.17,
+          letterSpacing: '-0.035em',
+          lineHeight:    1.15,
           color:         TEXT,
         }}
       >
@@ -266,7 +266,7 @@ export function LandingPage() {
       {/* ══ Section 1 — Hero ═════════════════════════════════ */}
       <section
         className="relative flex flex-col items-center overflow-hidden"
-        style={{ minHeight: '100vh', paddingTop: 'clamp(80px, 12vh, 120px)' }}
+        style={{ minHeight: '100vh', paddingTop: 'clamp(100px, 16vh, 172px)' }}
       >
         {/* 배경 그라디언트 */}
         <div className="absolute inset-0 pointer-events-none" style={{
@@ -297,8 +297,8 @@ export function LandingPage() {
           initial={{ opacity: 0, y: 32 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, ease: EASE }}
-          className="relative z-10 flex flex-col items-center text-center gap-5 px-6"
-          style={{ maxWidth: 660 }}
+          className="relative z-10 flex flex-col items-center text-center gap-7 px-6"
+          style={{ maxWidth: 720 }}
         >
           {/* 타이포 로고 — 서비스명 노출 */}
           <motion.div
@@ -310,13 +310,13 @@ export function LandingPage() {
               src="/navi-logo.svg"
               alt="NAVIchart"
               draggable={false}
-              style={{ height: 72, width: 'auto' }}
+              style={{ height: 108, width: 'auto' }}
               className="select-none"
             />
           </motion.div>
 
           <h1 style={{
-            fontSize:      'clamp(34px, 5.5vw, 58px)',
+            fontSize:      'clamp(38px, 5.8vw, 66px)',
             fontWeight:    900,
             letterSpacing: '-0.035em',
             lineHeight:    1.12,
@@ -338,7 +338,7 @@ export function LandingPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.1, delay: 0.2, ease: EASE }}
           className="relative z-10 w-full px-4 sm:px-12"
-          style={{ maxWidth: 1180, marginTop: 'clamp(40px, 6vh, 68px)', marginBottom: -100 }}
+          style={{ maxWidth: 1180, marginTop: 'clamp(60px, 9vh, 96px)', marginBottom: -100 }}
         >
           <div className="absolute bottom-0 left-0 right-0 pointer-events-none z-10"
                style={{ height: 220, background: `linear-gradient(to top, ${BG} 5%, rgba(3,6,23,0.85) 40%, transparent 100%)` }} />
@@ -355,14 +355,14 @@ export function LandingPage() {
       </section>
 
       {/* 섹션 간 여백 */}
-      <div style={{ height: 'clamp(100px, 14vh, 160px)' }} />
+      <div style={{ height: 'clamp(160px, 20vh, 220px)' }} />
 
       {/* ══ Section 2 — 튜토리얼 ════════════════════════════ */}
       <section
         className="relative px-4 sm:px-12"
-        style={{ maxWidth: 1180, margin: '0 auto', paddingBottom: 'clamp(100px, 14vh, 160px)' }}
+        style={{ maxWidth: 1180, margin: '0 auto', paddingBottom: 'clamp(160px, 20vh, 220px)' }}
       >
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-32 items-center">
           <FeatureText
             tag="16단계 튜토리얼"
             headline={<>단계별로,<br />직접 클릭하며<br />배워요.</>}
@@ -381,7 +381,7 @@ export function LandingPage() {
       <Divider />
 
       {/* ── 나비 장식 3: 섹션 구분 중앙 포인트 ── */}
-      <div className="flex justify-center" style={{ marginTop: 32, marginBottom: 32 }}>
+      <div className="flex justify-center" style={{ marginTop: 56, marginBottom: 56 }}>
         <NaviButterfly
           size={52}
           opacity={0.18}
@@ -393,9 +393,9 @@ export function LandingPage() {
       {/* ══ Section 3 — 분석 도구 ════════════════════════════ */}
       <section
         className="relative px-4 sm:px-12"
-        style={{ maxWidth: 1180, margin: '0 auto', paddingBottom: 'clamp(100px, 14vh, 160px)' }}
+        style={{ maxWidth: 1180, margin: '0 auto', paddingBottom: 'clamp(160px, 20vh, 220px)' }}
       >
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-32 items-center">
           <motion.div {...fadeRight(0.08)} className="lg:order-1">
             <BrowserFrame
               src="/landing/shot-chart-ind.png"
@@ -419,20 +419,20 @@ export function LandingPage() {
       {/* ══ Section 4 — 실전 챌린지 ═════════════════════════ */}
       <section
         className="relative px-4 sm:px-12"
-        style={{ paddingTop: 'clamp(100px, 14vh, 160px)', paddingBottom: 'clamp(100px, 14vh, 160px)' }}
+        style={{ paddingTop: 'clamp(160px, 20vh, 220px)', paddingBottom: 'clamp(160px, 20vh, 220px)' }}
       >
-        <div className="flex flex-col items-center text-center gap-4"
-             style={{ maxWidth: 560, margin: '0 auto 56px' }}>
+        <div className="flex flex-col items-center text-center gap-5"
+             style={{ maxWidth: 600, margin: '0 auto 80px' }}>
           <motion.div {...fadeUp(0)}>
             <FeatureTag>실전 챌린지</FeatureTag>
           </motion.div>
           <motion.h2
             {...fadeUp(0.08)}
             style={{
-              fontSize:      'clamp(26px, 3.0vw, 40px)',
+              fontSize:      'clamp(30px, 3.4vw, 46px)',
               fontWeight:    900,
-              letterSpacing: '-0.03em',
-              lineHeight:    1.17,
+              letterSpacing: '-0.035em',
+              lineHeight:    1.15,
               color:         TEXT,
             }}
           >
@@ -458,7 +458,7 @@ export function LandingPage() {
       {/* ══ Final CTA ════════════════════════════════════════ */}
       <section
         className="relative flex flex-col items-center justify-center text-center px-6 overflow-hidden"
-        style={{ paddingTop: 'clamp(80px, 12vh, 140px)', paddingBottom: 'clamp(80px, 14vh, 160px)' }}
+        style={{ paddingTop: 'clamp(140px, 18vh, 200px)', paddingBottom: 'clamp(140px, 18vh, 200px)' }}
       >
         {/* 배경 그라디언트 */}
         <div className="absolute inset-0 pointer-events-none" style={{
@@ -474,7 +474,7 @@ export function LandingPage() {
           style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%) rotate(10deg)' }}
         />
 
-        <div className="relative z-10 flex flex-col items-center gap-6">
+        <div className="relative z-10 flex flex-col items-center gap-8">
           {/* 타이포 로고 — CTA 섹션 브랜드 재노출 */}
           <motion.div {...fadeUp(0)}>
             <img
@@ -489,10 +489,10 @@ export function LandingPage() {
           <motion.h2
             {...fadeUp(0.08)}
             style={{
-              fontSize:      'clamp(34px, 5vw, 58px)',
+              fontSize:      'clamp(42px, 5.5vw, 68px)',
               fontWeight:    900,
-              letterSpacing: '-0.035em',
-              lineHeight:    1.14,
+              letterSpacing: '-0.04em',
+              lineHeight:    1.1,
               color:         TEXT,
             }}
           >
