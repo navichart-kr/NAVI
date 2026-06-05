@@ -13,10 +13,24 @@ import { useTutorialStore } from '@/stores/tutorialStore'
 import { buildCandleLearningSteps } from '@/data/lessonSteps/candleLearning'
 import { buildVolumeLearningSteps }  from '@/data/lessonSteps/volumeLearning'
 
+/**
+ * 학습용 데이터 기준 날짜 — 2010년 이후 데이터만 패턴 탐색에 사용
+ * "전체" 기간 선택 시 1980~90년대 분할조정 가격($0.1 수준)이 포함되므로
+ * 현대 차트와 맥락이 다른 패턴이 선택되는 문제를 방지한다.
+ * 필터 후 200봉 미만이면 원본 데이터로 폴백.
+ */
+const LEARN_CUT_DATE = '2010-01-01'
+const MIN_CANDLES    = 200
+
+function recentLearningData(candleData: ReturnType<typeof useChartStore.getState>['candleData']) {
+  const filtered = candleData.filter(c => c.time >= LEARN_CUT_DATE)
+  return filtered.length >= MIN_CANDLES ? filtered : candleData
+}
+
 /** 캔들 패턴 학습 시작 */
 export function openCandleSelect() {
   const candleData = useChartStore.getState().candleData
-  const steps = buildCandleLearningSteps(candleData)
+  const steps = buildCandleLearningSteps(recentLearningData(candleData))
   if (!steps.length) {
     console.warn('[CandleLearning] 패턴을 데이터에서 찾지 못했어요.')
     return
@@ -27,7 +41,7 @@ export function openCandleSelect() {
 /** 거래량 학습 시작 */
 export function openVolumeSelect() {
   const candleData = useChartStore.getState().candleData
-  const steps = buildVolumeLearningSteps(candleData)
+  const steps = buildVolumeLearningSteps(recentLearningData(candleData))
   if (!steps.length) {
     console.warn('[VolumeLearning] 거래량 데이터를 찾지 못했어요.')
     return
