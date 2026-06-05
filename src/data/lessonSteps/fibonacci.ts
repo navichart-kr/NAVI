@@ -39,11 +39,13 @@ export const fibonacciSteps: TutorialStep[] = [
   },
 
   // ── STEP 3  직접 피보나치 작도 (가이드 마커) ─────────────
+  // 저점(좌하단)·고점(우상단)이 대각선 위치 → 어느 쪽도 가리지 않으려면
+  // 분석도구 카드(좌열)를 기준으로 오른쪽(우하단 도구 영역)에 카드를 배치
   {
     id:                   'fib-adv-draw',
-    targetSelector:       '#drawing-tools-card',
+    targetSelector:       '#analysis-tools-card',
     mobileTargetSelector: '#drawing-toolbar',
-    position:             'left',
+    position:             'right',
     focusBarsFromEnd:     55,
     clearDrawingsOnEnter: true,
     fibGuide: {
