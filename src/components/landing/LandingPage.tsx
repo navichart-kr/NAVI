@@ -195,7 +195,7 @@ function FeatureText({
       </motion.h2>
       <motion.p
         {...fadeUp(delay + 0.16)}
-        style={{ fontSize: 14, color: MUTED, lineHeight: 1.78, maxWidth: 380 }}
+        style={{ fontSize: 14, color: MUTED, lineHeight: 1.78, maxWidth: 380, wordBreak: 'keep-all' }}
       >
         {sub}
       </motion.p>
@@ -292,18 +292,7 @@ export function LandingPage() {
           style={{ position: 'absolute', bottom: '18%', left: '0%' }}
         />
 
-        {/* ── 상단 네비게이션 로고 ── */}
-        <div className="absolute top-0 left-0 right-0 z-30 px-6 sm:px-10 py-5 flex items-center">
-          <img
-            src="/navi-logo.svg"
-            alt="NAVIchart"
-            draggable={false}
-            style={{ height: 30, width: 'auto' }}
-            className="select-none"
-          />
-        </div>
-
-        {/* 헤드라인 + CTA */}
+        {/* 헤드라인 */}
         <motion.div
           initial={{ opacity: 0, y: 32 }}
           animate={{ opacity: 1, y: 0 }}
@@ -321,7 +310,7 @@ export function LandingPage() {
               src="/navi-logo.svg"
               alt="NAVIchart"
               draggable={false}
-              style={{ height: 44, width: 'auto' }}
+              style={{ height: 72, width: 'auto' }}
               className="select-none"
             />
           </motion.div>
@@ -337,20 +326,10 @@ export function LandingPage() {
             직접 경험으로 키워요.
           </h1>
 
-          <p style={{ fontSize: 'clamp(14px, 1.5vw, 16px)', color: MUTED, lineHeight: 1.72, maxWidth: 440 }}>
+          <p style={{ fontSize: 'clamp(14px, 1.5vw, 16px)', color: MUTED, lineHeight: 1.72, maxWidth: 440, wordBreak: 'keep-all' }}>
             설명을 읽는 것이 아니라, 실제 차트를 직접 클릭하며 배워요.
           </p>
 
-          <div className="flex items-center gap-3 mt-2">
-            <CTAButton href="/tutorial" primary
-              onClick={() => trackEvent('landing_cta_clicked', { destination: 'tutorial' })}>
-              튜토리얼 시작하기
-            </CTAButton>
-            <CTAButton href="/chart"
-              onClick={() => trackEvent('landing_cta_clicked', { destination: 'chart' })}>
-              차트 바로 보기
-            </CTAButton>
-          </div>
         </motion.div>
 
         {/* Hero 목업 */}
@@ -461,7 +440,7 @@ export function LandingPage() {
           </motion.h2>
           <motion.p
             {...fadeUp(0.16)}
-            style={{ fontSize: 14, color: MUTED, lineHeight: 1.78, maxWidth: 420 }}
+            style={{ fontSize: 14, color: MUTED, lineHeight: 1.78, maxWidth: 480, wordBreak: 'keep-all' }}
           >
             실제 NVDA 과거 데이터로 직접 예측해보고, 정답을 확인하며 판단력을 키워요.
           </motion.p>
