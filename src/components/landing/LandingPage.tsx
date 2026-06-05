@@ -40,6 +40,48 @@ const fadeRight = (delay = 0) => ({
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
+// NaviButterfly — 배경 없는 나비 날개 (장식용 인라인 SVG)
+// ─────────────────────────────────────────────────────────────────────────────
+function NaviButterfly({
+  size    = 120,
+  opacity = 0.07,
+  color   = '#2D4198',
+  rotate  = 0,
+  flipX   = false,
+  style   = {},
+}: {
+  size?:    number
+  opacity?: number
+  color?:   string
+  rotate?:  number
+  flipX?:   boolean
+  style?:   React.CSSProperties
+}) {
+  const transform = [
+    rotate  ? `rotate(${rotate}deg)`  : '',
+    flipX   ? 'scaleX(-1)'            : '',
+  ].filter(Boolean).join(' ') || undefined
+
+  return (
+    <svg
+      viewBox="0 0 512 512"
+      width={size}
+      height={size}
+      fill={color}
+      aria-hidden="true"
+      style={{ opacity, transform, pointerEvents: 'none', userSelect: 'none', flexShrink: 0, ...style }}
+    >
+      {/* 좌측 날개 */}
+      <polygon points="80.16 102.53 126.02 270.96 189.14 313.31 164.69 320.95 116.56 391.34 207.69 357.28 231.76 327.41 242.66 238.7 225.8 195.38 80.16 102.53" />
+      {/* 우측 날개 */}
+      <polygon points="257.02 264.74 251.7 329.74 383.16 285.1 466.23 139.6 314.84 187.55 257.02 264.74" />
+      {/* 중앙 다이아몬드 */}
+      <polygon points="298.84 319.45 258.2 339.75 266.68 371.84 321.09 405.58 339.5 383.89 340.21 332.96 298.84 319.45" />
+    </svg>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // BrowserFrame — macOS 브라우저 창 목업
 // ─────────────────────────────────────────────────────────────────────────────
 type GlowLevel = 'hero' | 'feature' | 'none'
@@ -94,7 +136,6 @@ function BrowserFrame({
         </div>
         <div className="shrink-0" style={{ width: 56 }} />
       </div>
-      {/* 스크린샷 */}
       <Image
         src={src} alt={alt}
         width={2880} height={1800}
@@ -107,7 +148,7 @@ function BrowserFrame({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FeatureTag — 작은 라벨 칩
+// FeatureTag — 라벨 칩
 // ─────────────────────────────────────────────────────────────────────────────
 function FeatureTag({ children }: { children: React.ReactNode }) {
   return (
@@ -174,16 +215,13 @@ function CTAButton({
   large?:    boolean
   children:  React.ReactNode
 }) {
-  const h = large ? 54 : 48
-  const px = primary ? (large ? '32px' : '26px') : '20px'
-
   return (
     <Link
       href={href}
       onClick={onClick}
       style={{
-        height:         h,
-        padding:        `0 ${px}`,
+        height:         large ? 54 : 48,
+        padding:        primary ? (large ? '0 32px' : '0 26px') : '0 20px',
         background:     primary ? BLUE : 'transparent',
         color:          primary ? '#fff' : MUTED,
         fontSize:       primary ? (large ? 15 : 14) : 13,
@@ -195,7 +233,6 @@ function CTAButton({
         boxShadow:      primary ? '0 4px 28px rgba(91,127,255,0.32)' : 'none',
         textDecoration: 'none',
         whiteSpace:     'nowrap' as const,
-        transition:     'opacity 0.15s ease',
       }}
     >
       {children}
@@ -210,9 +247,9 @@ function Divider() {
   return (
     <div
       style={{
-        height:  1,
-        margin:  '0 auto',
-        maxWidth: 1100,
+        height:     1,
+        margin:     '0 auto',
+        maxWidth:   1100,
         background: 'linear-gradient(to right, transparent, rgba(38,53,88,0.55) 30%, rgba(38,53,88,0.55) 70%, transparent)',
       }}
     />
@@ -236,6 +273,36 @@ export function LandingPage() {
           background: 'radial-gradient(ellipse 80% 60% at 50% 10%, rgba(45,65,152,0.22) 0%, transparent 62%)',
         }} />
 
+        {/* ── 나비 장식 1: 우측 상단 대형 ── */}
+        <NaviButterfly
+          size={380}
+          opacity={0.055}
+          color="#2D4198"
+          rotate={18}
+          style={{ position: 'absolute', top: '4%', right: '-4%' }}
+        />
+
+        {/* ── 나비 장식 2: 좌측 하단 중형 ── */}
+        <NaviButterfly
+          size={200}
+          opacity={0.042}
+          color="#5B7FFF"
+          rotate={-14}
+          flipX
+          style={{ position: 'absolute', bottom: '18%', left: '0%' }}
+        />
+
+        {/* ── 상단 네비게이션 로고 ── */}
+        <div className="absolute top-0 left-0 right-0 z-30 px-6 sm:px-10 py-5 flex items-center">
+          <img
+            src="/navi-logo.svg"
+            alt="NAVIchart"
+            draggable={false}
+            style={{ height: 30, width: 'auto' }}
+            className="select-none"
+          />
+        </div>
+
         {/* 헤드라인 + CTA */}
         <motion.div
           initial={{ opacity: 0, y: 32 }}
@@ -244,12 +311,23 @@ export function LandingPage() {
           className="relative z-10 flex flex-col items-center text-center gap-5 px-6"
           style={{ maxWidth: 660 }}
         >
-          <p style={{ fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase', fontWeight: 600, color: DIM }}>
-            NAVIchart
-          </p>
+          {/* 타이포 로고 — 서비스명 노출 */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: EASE }}
+          >
+            <img
+              src="/navi-logo.svg"
+              alt="NAVIchart"
+              draggable={false}
+              style={{ height: 44, width: 'auto' }}
+              className="select-none"
+            />
+          </motion.div>
 
           <h1 style={{
-            fontSize:      'clamp(36px, 5.8vw, 62px)',
+            fontSize:      'clamp(34px, 5.5vw, 58px)',
             fontWeight:    900,
             letterSpacing: '-0.035em',
             lineHeight:    1.12,
@@ -283,10 +361,8 @@ export function LandingPage() {
           className="relative z-10 w-full px-4 sm:px-12"
           style={{ maxWidth: 1180, marginTop: 'clamp(40px, 6vh, 68px)', marginBottom: -100 }}
         >
-          {/* 하단 페이드 */}
           <div className="absolute bottom-0 left-0 right-0 pointer-events-none z-10"
                style={{ height: 220, background: `linear-gradient(to top, ${BG} 5%, rgba(3,6,23,0.85) 40%, transparent 100%)` }} />
-          {/* 3-D tilt */}
           <div style={{ perspective: '1600px', perspectiveOrigin: '50% 0%' }}>
             <div style={{ transform: 'rotateX(7deg)', transformOrigin: 'top center' }}>
               <BrowserFrame
@@ -325,10 +401,20 @@ export function LandingPage() {
 
       <Divider />
 
+      {/* ── 나비 장식 3: 섹션 구분 중앙 포인트 ── */}
+      <div className="flex justify-center" style={{ marginTop: 32, marginBottom: 32 }}>
+        <NaviButterfly
+          size={52}
+          opacity={0.18}
+          color="#5B7FFF"
+          rotate={6}
+        />
+      </div>
+
       {/* ══ Section 3 — 분석 도구 ════════════════════════════ */}
       <section
         className="relative px-4 sm:px-12"
-        style={{ maxWidth: 1180, margin: '0 auto', paddingTop: 'clamp(100px, 14vh, 160px)', paddingBottom: 'clamp(100px, 14vh, 160px)' }}
+        style={{ maxWidth: 1180, margin: '0 auto', paddingBottom: 'clamp(100px, 14vh, 160px)' }}
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
           <motion.div {...fadeRight(0.08)} className="lg:order-1">
@@ -356,7 +442,6 @@ export function LandingPage() {
         className="relative px-4 sm:px-12"
         style={{ paddingTop: 'clamp(100px, 14vh, 160px)', paddingBottom: 'clamp(100px, 14vh, 160px)' }}
       >
-        {/* 헤더 */}
         <div className="flex flex-col items-center text-center gap-4"
              style={{ maxWidth: 560, margin: '0 auto 56px' }}>
           <motion.div {...fadeUp(0)}>
@@ -382,7 +467,6 @@ export function LandingPage() {
           </motion.p>
         </div>
 
-        {/* 스크린샷 */}
         <motion.div {...fadeUp(0.12)} style={{ maxWidth: 1000, margin: '0 auto' }}>
           <BrowserFrame
             src="/landing/shot-simulate.png"
@@ -394,21 +478,35 @@ export function LandingPage() {
 
       {/* ══ Final CTA ════════════════════════════════════════ */}
       <section
-        className="relative flex flex-col items-center justify-center text-center px-6"
-        style={{ paddingTop: 'clamp(80px, 12vh, 130px)', paddingBottom: 'clamp(80px, 14vh, 160px)' }}
+        className="relative flex flex-col items-center justify-center text-center px-6 overflow-hidden"
+        style={{ paddingTop: 'clamp(80px, 12vh, 140px)', paddingBottom: 'clamp(80px, 14vh, 160px)' }}
       >
-        {/* 배경 */}
+        {/* 배경 그라디언트 */}
         <div className="absolute inset-0 pointer-events-none" style={{
           background: 'radial-gradient(ellipse 65% 65% at 50% 50%, rgba(45,65,152,0.18) 0%, transparent 62%)',
         }} />
 
+        {/* ── 나비 장식 4: CTA 배경 중앙 ── */}
+        <NaviButterfly
+          size={260}
+          opacity={0.052}
+          color="#2D4198"
+          rotate={10}
+          style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%) rotate(10deg)' }}
+        />
+
         <div className="relative z-10 flex flex-col items-center gap-6">
-          <motion.p
-            {...fadeUp(0)}
-            style={{ fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase', fontWeight: 600, color: DIM }}
-          >
-            NAVIchart
-          </motion.p>
+          {/* 타이포 로고 — CTA 섹션 브랜드 재노출 */}
+          <motion.div {...fadeUp(0)}>
+            <img
+              src="/navi-logo.svg"
+              alt="NAVIchart"
+              draggable={false}
+              style={{ height: 34, width: 'auto', opacity: 0.72 }}
+              className="select-none"
+            />
+          </motion.div>
+
           <motion.h2
             {...fadeUp(0.08)}
             style={{
@@ -421,12 +519,14 @@ export function LandingPage() {
           >
             지금 바로<br />시작해요.
           </motion.h2>
+
           <motion.div {...fadeUp(0.16)} className="flex items-center gap-3 mt-2">
             <CTAButton href="/tutorial" primary large
               onClick={() => trackEvent('landing_cta_clicked', { destination: 'tutorial' })}>
               NAVIchart 시작하기
             </CTAButton>
           </motion.div>
+
           <motion.div {...fadeUp(0.22)}>
             <Link href="/chart"
               onClick={() => trackEvent('landing_cta_clicked', { destination: 'chart' })}
