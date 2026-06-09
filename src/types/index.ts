@@ -21,7 +21,12 @@ export interface JudgmentChoice {
 
 export interface TutorialStep {
   id:             string
-  targetSelector: string
+  /**
+   * spotlight 대상 CSS 셀렉터.
+   * null 로 설정하면 dim overlay / ring 이 모두 렌더링되지 않는다.
+   * (overlayPosition 과 함께 쓰면 카드만 고정 배치하고 spotlight 없앨 수 있음)
+   */
+  targetSelector: string | null
   title:          string
   body:           string
   tips?:          string[]
