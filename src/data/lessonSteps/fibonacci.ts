@@ -220,7 +220,7 @@ function buildStepsFromSwing(swing: FibSwing): TutorialStep[] {
     {
       id:                         'fib-adv-draw',
       targetSelector:             '#chart-area',
-      position:                   'bottom',
+      position:                   'right',
       focusDateRange,
       clearDrawingsOnEnter:       true,
       activateDrawingToolOnEnter: 'fibonacci',
@@ -245,7 +245,7 @@ function buildStepsFromSwing(swing: FibSwing): TutorialStep[] {
     {
       id:               'fib-adv-explain',
       targetSelector:   '#chart-area',
-      position:         'bottom',
+      position:         'right',
       focusDateRange,
       title:            '각 레벨과 실제 가격 반응을 확인해봐요',
       body:             `저점 ${fl(lowPrice)} ~ 고점 ${fl(highPrice)} 구간에 피보나치를 적용하면:\n\n• 23.6%  ${f(fib236)} — 가격이 짧게 머문 구간\n• 38.2%  ${f(fib382)} — 강한 조정 후 지지 구간\n• 50.0%  ${f(fib50)} — 심리적 중간 지점\n• 61.8%  ${f(fib618)} — 황금 비율, 깊은 조정 구간\n\n실제로 ${bounceDate}에 가격이 ${fl(bouncePrice)} 부근에서 멈추고 다시 상승했어요.\n이 가격이 어느 레벨에 해당하는지 차트에서 확인해봐요.`,
@@ -261,7 +261,7 @@ function buildStepsFromSwing(swing: FibSwing): TutorialStep[] {
     {
       id:               'fib-adv-levels',
       targetSelector:   '#chart-area',
-      position:         'bottom',
+      position:         'right',
       focusDateRange,
       title:            '이 차트에서 가격은 어느 레벨에서 반등했을까요?',
       body:             `고점 ${fl(highPrice)} 이후 조정을 받은 가격이 다시 반등한 피보나치 레벨은 어디일까요?\n\n힌트: 반등이 시작된 저점은 ${fl(bouncePrice)} 부근이에요.`,
