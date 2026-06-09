@@ -983,7 +983,7 @@ export function SimulateChart({ pastData, futureData, onRetry }: Props) {
         {/* 분석 도구: 2×2 그리드 */}
         <div id="challenge-analysis-panel"
              className="bg-navi-surface border border-navi-border rounded-xl p-3">
-          <p className="text-[10px] font-bold text-navi-muted uppercase tracking-widest mb-2">분석 도구</p>
+          <p className="text-[10px] font-bold text-navi-secondary uppercase tracking-widest mb-2">분석 도구</p>
           <div className="grid grid-cols-2 gap-2">
             {INDICATOR_BTNS.map(({ key, label }) => (
               <button key={key} onClick={() => toggleInd(key)}
@@ -1002,7 +1002,7 @@ export function SimulateChart({ pastData, futureData, onRetry }: Props) {
         {/* 작도 도구: 1행 3버튼 */}
         <div id="challenge-drawing-panel"
              className="bg-navi-surface border border-navi-border rounded-xl p-3">
-          <p className="text-[10px] font-bold text-navi-muted uppercase tracking-widest mb-2">작도 도구</p>
+          <p className="text-[10px] font-bold text-navi-secondary uppercase tracking-widest mb-2">작도 도구</p>
           <div className="flex gap-2">
             {([
               { v: 'trendline' as const, label: '추세선'   },
@@ -1060,7 +1060,7 @@ export function SimulateChart({ pastData, futureData, onRetry }: Props) {
             <p className="text-[14px] font-bold text-navi-text mb-1">
               이 시점 이후 {futureData.length}일, 주가는?
             </p>
-            <p className="text-[12px] text-navi-muted">지금까지 분석한 내용을 바탕으로 예측해봐요. 틀려도 괜찮아요!</p>
+            <p className="text-[12px] font-medium text-navi-secondary">지금까지 분석한 내용을 바탕으로 예측해봐요. 틀려도 괜찮아요!</p>
           </div>
 
           <div className="grid grid-cols-3 gap-2">
@@ -1153,7 +1153,7 @@ export function SimulateChart({ pastData, futureData, onRetry }: Props) {
                     </span>
                     <div className="flex-1 min-w-0">
                       <p className="text-[12px] font-semibold text-navi-text leading-snug">{sig.label}</p>
-                      <p className="text-[11px] text-navi-muted leading-relaxed">{sig.detail}</p>
+                      <p className="text-[11px] font-medium text-navi-secondary leading-relaxed">{sig.detail}</p>
                     </div>
                   </div>
                 ))}

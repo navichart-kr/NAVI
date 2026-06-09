@@ -737,7 +737,7 @@ export function TutorialStep() {
         <>
           {currentStep.body && (
             <p className={clsx(
-              'text-[12px] text-navi-secondary leading-relaxed whitespace-pre-line',
+              'text-[12px] font-medium text-navi-secondary leading-relaxed whitespace-pre-line',
               !bodyOpen && 'line-clamp-2'
             )}>
               {currentStep.body}
@@ -755,7 +755,7 @@ export function TutorialStep() {
           {bodyOpen && activeTips && activeTips.length > 0 && (
             <ul className="bg-navi-surface2 rounded-lg p-2.5 space-y-1">
               {activeTips.map((tip, i) => (
-                <li key={i} className="flex gap-1.5 text-[11.5px] text-navi-secondary">
+                <li key={i} className="flex gap-1.5 text-[11.5px] font-medium text-navi-secondary">
                   <span className="text-navi-muted shrink-0">•</span>
                   <span>{tip}</span>
                 </li>
@@ -769,14 +769,14 @@ export function TutorialStep() {
       ) : (
         <>
           {currentStep.body && (
-            <p className="text-[12px] text-navi-secondary leading-relaxed whitespace-pre-line">
+            <p className="text-[12px] font-medium text-navi-secondary leading-relaxed whitespace-pre-line">
               {currentStep.body}
             </p>
           )}
           {currentStep.tips && currentStep.tips.length > 0 && (
             <ul className="bg-navi-surface2 rounded-lg p-3 space-y-1.5">
               {currentStep.tips.map((tip, i) => (
-                <li key={i} className="flex gap-2 text-[12px] text-navi-secondary">
+                <li key={i} className="flex gap-2 text-[12px] font-medium text-navi-secondary">
                   <span className="text-navi-muted shrink-0 mt-px">•</span>
                   <span>{tip}</span>
                 </li>
@@ -802,7 +802,7 @@ export function TutorialStep() {
               <span className="text-[10px] font-bold text-navi-action uppercase tracking-[0.06em]">지금 해보세요</span>
             </div>
           )}
-          <p className={clsx('text-navi-text leading-snug', isMobile ? 'text-[12px]' : 'text-[12px]')}>
+          <p className={clsx('font-medium text-navi-text leading-snug', isMobile ? 'text-[12px]' : 'text-[12px]')}>
             {activeMission}
           </p>
         </div>
@@ -852,7 +852,7 @@ export function TutorialStep() {
       <p className={clsx('font-bold text-navi-text leading-snug', isMobile ? 'text-[13px]' : 'text-[14px]')}>
         {currentStep.title}
       </p>
-      <p className="text-[12px] text-navi-secondary">{currentStep.judgment.question}</p>
+      <p className="text-[12px] font-medium text-navi-secondary">{currentStep.judgment.question}</p>
 
       <AnimatePresence mode="wait">
         {showWrongFB ? (
@@ -862,11 +862,11 @@ export function TutorialStep() {
             className="space-y-2"
           >
             <div className="bg-navi-danger/[0.08] border border-navi-danger/25 rounded-lg p-3">
-              <p className="text-[12px] font-semibold text-navi-text mb-1"> 다시 살펴보세요</p>
+              <p className="text-[12px] font-semibold text-navi-text mb-1">다시 살펴보세요</p>
               {wrongChoice && (() => {
                 const ch = currentStep.judgment!.choices.find(c => c.value === wrongChoice)
                 return ch ? (
-                  <p className="text-[11.5px] text-navi-secondary leading-relaxed">
+                  <p className="text-[11.5px] font-medium text-navi-secondary leading-relaxed">
                     {ch.label} — {ch.feedback}
                   </p>
                 ) : null
@@ -876,7 +876,7 @@ export function TutorialStep() {
               <div className="bg-navi-surface3 rounded-lg px-3 py-2">
                 <p className="text-[9.5px] font-bold text-navi-muted uppercase tracking-[0.08em] mb-1">힌트</p>
                 {currentStep.judgment.hints.map((h, i) => (
-                  <p key={i} className="text-[11.5px] text-navi-secondary">• {h}</p>
+                  <p key={i} className="text-[11.5px] font-medium text-navi-secondary">• {h}</p>
                 ))}
               </div>
             )}
@@ -950,14 +950,14 @@ export function TutorialStep() {
               {isCorrect && <span className="text-[11px] font-bold text-navi-success"></span>}
               <span className="text-[12px] font-semibold text-navi-text">{chosen.label}</span>
             </div>
-            <p className="text-[12px] text-navi-secondary leading-relaxed">{chosen.feedback}</p>
+            <p className="text-[12px] font-medium text-navi-secondary leading-relaxed">{chosen.feedback}</p>
           </div>
         ) : null
       })()}
 
       {clickedCandle && currentStep.actionRequired === 'candle-click' && (
         <div className="bg-navi-surface2 rounded-lg p-2.5">
-          <p className="text-[10px] text-navi-muted mb-2 font-semibold uppercase tracking-wide">
+          <p className="text-[10px] font-semibold text-navi-secondary mb-2 uppercase tracking-wide">
             {clickedCandle.time}
           </p>
           <div className="grid grid-cols-5 gap-1">

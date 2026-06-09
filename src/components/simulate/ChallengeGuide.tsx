@@ -247,7 +247,7 @@ export function ChallengeGuide({ forceGuide = false }: Props) {
             {/* 콘텐츠 */}
             <div className="px-4 py-3.5 space-y-2">
               <p className="text-[14px] font-bold text-navi-text leading-snug">{step.title}</p>
-              <p className="text-[12px] text-navi-secondary leading-relaxed whitespace-pre-line">{step.body}</p>
+              <p className="text-[12px] font-medium text-navi-secondary leading-relaxed whitespace-pre-line">{step.body}</p>
             </div>
 
             {/* 네비 */}

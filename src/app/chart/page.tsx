@@ -142,10 +142,10 @@ function ChartPageInner() {
             className="bg-navi-surface border border-navi-border rounded-xl p-3 sm:p-4 overflow-visible"
           >
             <div className="mb-2 sm:mb-3">
-              <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.07em] uppercase text-navi-muted">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.07em] uppercase text-navi-secondary">
                 분석 도구
               </span>
-              <p className="hidden sm:block text-[11px] text-navi-muted mt-0.5">클릭하면 차트에 표시돼요</p>
+              <p className="hidden sm:block text-[11px] text-navi-secondary mt-0.5">클릭하면 차트에 표시돼요</p>
             </div>
             <IndicatorToolbar />
           </div>
@@ -156,10 +156,10 @@ function ChartPageInner() {
             className="bg-navi-surface border border-navi-border rounded-xl p-3 sm:p-4"
           >
             <div className="mb-2 sm:mb-3">
-              <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.07em] uppercase text-navi-muted">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.07em] uppercase text-navi-secondary">
                 작도 도구
               </span>
-              <p className="hidden sm:block text-[11px] text-navi-muted mt-0.5">차트에 직접 그려봐요</p>
+              <p className="hidden sm:block text-[11px] text-navi-secondary mt-0.5">차트에 직접 그려봐요</p>
             </div>
             <DrawingToolbar />
           </div>
@@ -171,7 +171,7 @@ function ChartPageInner() {
         <div className="mt-3">
           <div className="flex items-center gap-2 mb-2">
             <div className="h-px flex-1 bg-navi-border/50" />
-            <span className="text-[9px] font-bold tracking-[0.08em] uppercase text-navi-muted px-1">
+            <span className="text-[9px] font-bold tracking-[0.08em] uppercase text-navi-secondary px-1">
               패턴 학습
             </span>
             <div className="h-px flex-1 bg-navi-border/50" />
@@ -186,7 +186,7 @@ function ChartPageInner() {
                          transition-all active:scale-[0.98] text-left"
             >
               <p className="text-[12px] font-bold text-navi-text">캔들 패턴 학습</p>
-              <p className="text-[10px] text-navi-muted leading-snug">
+              <p className="text-[10px] text-navi-secondary leading-snug">
                 실제 차트에서<br />5가지 패턴을 배워보세요
               </p>
             </button>
@@ -199,7 +199,7 @@ function ChartPageInner() {
                          transition-all active:scale-[0.98] text-left"
             >
               <p className="text-[12px] font-bold text-navi-text">거래량 학습</p>
-              <p className="text-[10px] text-navi-muted leading-snug">
+              <p className="text-[10px] text-navi-secondary leading-snug">
                 거래량과 가격의 관계를<br />직접 확인해보세요
               </p>
             </button>

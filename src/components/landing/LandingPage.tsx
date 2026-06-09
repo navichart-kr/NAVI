@@ -9,9 +9,9 @@ import { trackEvent } from '@/lib/analytics'
 // 공통 상수
 // ─────────────────────────────────────────────────────────────────────────────
 const BG    = '#030617'
-const TEXT  = 'rgba(248,249,247,0.93)'
-const MUTED = 'rgba(248,249,247,0.50)'
-const DIM   = 'rgba(248,249,247,0.35)'
+const TEXT  = '#F8FAFC'    /* Primary Text */
+const MUTED = '#CBD5E1'    /* Secondary Text */
+const DIM   = '#64748B'    /* Disabled Text */
 const BLUE  = '#5B7FFF'
 const EASE  = [0.16, 1, 0.3, 1] as const
 

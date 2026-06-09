@@ -833,7 +833,9 @@ export function ChartContainer() {
 
       {error && !isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-navi-surface/90 rounded-2xl z-20">
-          <p className="text-xs text-red-400">{error}</p>
+          <div className="px-4 py-3 rounded-lg bg-navi-danger/[0.08] border border-navi-danger/25">
+            <p className="text-xs text-navi-text font-medium">{error}</p>
+          </div>
         </div>
       )}
 

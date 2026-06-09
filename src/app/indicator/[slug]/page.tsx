@@ -84,8 +84,8 @@ function DescBlock({ text }: { text: string }) {
               <ul className="space-y-1.5 pt-0.5">
                 {bulletLines.map((l, j) => (
                   <li key={j} className="flex gap-2 text-[13px] leading-relaxed">
-                    <span className="text-navi-muted shrink-0 font-bold mt-px">•</span>
-                    <span className="text-navi-text">{l.replace(/^[\s•]+/, '')}</span>
+                    <span className="text-navi-secondary shrink-0 font-bold mt-px">•</span>
+                    <span className="font-medium text-navi-text">{l.replace(/^[\s•]+/, '')}</span>
                   </li>
                 ))}
               </ul>
@@ -94,7 +94,7 @@ function DescBlock({ text }: { text: string }) {
         }
 
         return (
-          <p key={i} className="text-[13px] text-navi-text leading-[1.9] tracking-wide">
+          <p key={i} className="text-[13px] font-medium text-navi-text leading-[1.9] tracking-wide">
             {para}
           </p>
         )
@@ -120,8 +120,8 @@ function ReadItem({ text, index }: { text: string; index: number }) {
         <span className="font-semibold text-navi-text">{cond}</span>
         {mean && (
           <>
-            <span className="text-navi-muted font-bold mx-1.5">→</span>
-            <span className="text-navi-muted">{mean}</span>
+            <span className="text-navi-secondary font-bold mx-1.5">→</span>
+            <span className="font-medium text-navi-secondary">{mean}</span>
           </>
         )}
       </p>
@@ -132,7 +132,7 @@ function ReadItem({ text, index }: { text: string; index: number }) {
 // ── 섹션 레이블 ──────────────────────────────────────────
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[10px] font-bold text-navi-muted uppercase tracking-[0.12em] mb-4">
+    <p className="text-[10px] font-bold text-navi-secondary uppercase tracking-[0.12em] mb-4">
       {children}
     </p>
   )
@@ -197,8 +197,8 @@ export default function IndicatorDetailPage({ params }: Props) {
             <ul className="space-y-3">
               {indicator.tips.map((tip, i) => (
                 <li key={i} className="flex gap-3 text-[13px] leading-relaxed">
-                  <span className="shrink-0 text-navi-muted font-bold mt-px">→</span>
-                  <span className="text-navi-text">{tip}</span>
+                  <span className="shrink-0 text-navi-secondary font-bold mt-px">→</span>
+                  <span className="font-medium text-navi-text">{tip}</span>
                 </li>
               ))}
             </ul>
@@ -212,7 +212,7 @@ export default function IndicatorDetailPage({ params }: Props) {
             <p className="text-[10px] font-bold text-navi-text uppercase tracking-[0.12em] mb-3">
               주의할 점
             </p>
-            <p className="text-[13px] text-navi-secondary leading-[1.9] tracking-wide">
+            <p className="text-[13px] font-medium text-navi-text leading-[1.9] tracking-wide">
               {indicator.caution}
             </p>
           </div>

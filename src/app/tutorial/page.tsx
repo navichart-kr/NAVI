@@ -47,15 +47,15 @@ export default function TutorialPage() {
         transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
         className="mb-10"
       >
-        <h1 className="text-[28px] font-black text-navi-text leading-[1.2] mb-4">
+        <h1 className="text-[28px] font-extrabold text-navi-text leading-[1.2] mb-4">
           "차트를 분석할 수 있다"<br />
           는 확신
         </h1>
-        <p className="text-navi-secondary text-[15px] leading-relaxed mb-5">
+        <p className="font-medium text-navi-secondary text-[15px] leading-relaxed mb-5">
           설명을 읽는 게 아니라 직접 클릭하고, 판단하면서<br />
           차트 분석 능력이 자연스럽게 쌓여요.
         </p>
-        <div className="flex items-center gap-3 text-[13px] text-navi-muted">
+        <div className="flex items-center gap-3 text-[13px] text-navi-secondary">
           <span>약 7~10분</span>
           <span className="w-1 h-1 rounded-full bg-navi-border2 shrink-0" />
           <span>16단계 실습</span>
@@ -71,7 +71,7 @@ export default function TutorialPage() {
         transition={{ delay: 0.15, duration: 0.45 }}
         className="mb-10"
       >
-        <p className="text-[11px] font-semibold tracking-[0.1em] uppercase text-navi-muted mb-4">
+        <p className="text-[11px] font-semibold tracking-[0.1em] uppercase text-navi-secondary mb-4">
           학습 순서
         </p>
         <div className="space-y-2">
@@ -86,7 +86,7 @@ export default function TutorialPage() {
               ].join(' ')}
             >
               {/* 단계 번호 */}
-              <span className="text-[11px] font-bold text-navi-muted tabular-nums shrink-0 mt-0.5 w-5 text-right">
+              <span className="text-[11px] font-bold text-navi-secondary tabular-nums shrink-0 mt-0.5 w-5 text-right">
                 {p.phase}
               </span>
 
@@ -95,7 +95,7 @@ export default function TutorialPage() {
                 <p className="text-[14px] font-bold text-navi-text leading-snug mb-1">
                   {p.label}
                 </p>
-                <p className="text-[12px] text-navi-secondary">{p.steps}</p>
+                <p className="text-[12px] font-medium text-navi-secondary">{p.steps}</p>
               </div>
             </div>
           ))}

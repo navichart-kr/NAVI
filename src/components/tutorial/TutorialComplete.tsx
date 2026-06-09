@@ -55,7 +55,7 @@ export function TutorialComplete() {
               <h2 className="text-[22px] font-black text-navi-text leading-tight mb-2">
                 기초 과정 완료
               </h2>
-              <p className="text-[13px] text-navi-secondary leading-relaxed">
+              <p className="text-[13px] font-medium text-navi-secondary leading-relaxed">
                 캔들부터 종합 분석까지 모두 경험했어요.<br />
                 이제 무엇을 해볼까요?
               </p>

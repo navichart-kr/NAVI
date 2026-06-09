@@ -36,11 +36,11 @@
   --navi-warning:   255 184 77;   /* #FFB84D */
   --navi-danger:    255 107 107;  /* #FF6B6B */
 
-  /* 텍스트 (완성형 — 수정자 불필요) */
-  --navi-text:      248 249 247;               /* #F8F9F7 */
-  --navi-secondary: rgba(248, 249, 247, 0.72);
-  --navi-muted:     rgba(248, 249, 247, 0.44);
-  --navi-disabled:  rgba(248, 249, 247, 0.24);
+  /* 텍스트 — 3단계 고정 색상 (불투명도 기반 제거) */
+  --navi-text:      248 250 252;  /* #F8FAFC  — Primary   */
+  --navi-secondary: #CBD5E1;      /* Slate-300 — Secondary */
+  --navi-muted:     #CBD5E1;      /* Secondary와 동일 (2개 계층 통합) */
+  --navi-disabled:  #64748B;      /* Slate-500 — Disabled  */
 
   /* 캔들 */
   --navi-bullish: 38 166 154;   /* #26a69a teal */
@@ -49,7 +49,7 @@
   /* 차트 전용 (lightweight-charts에 직접 사용) */
   --chart-bg:    #101936;
   --chart-grid:  #1B2847;
-  --chart-text:  rgba(248, 249, 247, 0.55);
+  --chart-text:  #94A3B8;  /* Slate-400 — 차트 눈금 레이블 */
   --chart-border: #1B2847;
   --candle-up:   #26a69a;
   --candle-down: #ef5350;
@@ -123,10 +123,10 @@ body {
 .text-secondary { color: var(--navi-secondary); }
 .text-tertiary  { color: var(--navi-muted); }
 
-/* ── Quiet text utilities (inline style 대체) ─────────────── */
-.text-quiet-60  { color: rgb(var(--navi-text) / 0.60); }
-.text-quiet-45  { color: rgb(var(--navi-text) / 0.45); }
-.text-quiet-35  { color: rgb(var(--navi-text) / 0.35); }
+/* ── Quiet text utilities — 3단계 텍스트 계층에 매핑 ──────── */
+.text-quiet-60  { color: #CBD5E1; }  /* Secondary */
+.text-quiet-45  { color: #94A3B8; }  /* Slate-400 (Secondary ~ Disabled 중간) */
+.text-quiet-35  { color: #64748B; }  /* Disabled */
 
 /* ── Utilities ────────────────────────────────────────────── */
 .tabular       { font-variant-numeric: tabular-nums; }
