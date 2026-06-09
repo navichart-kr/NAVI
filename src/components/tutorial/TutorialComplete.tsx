@@ -39,10 +39,10 @@ export function TutorialComplete() {
               className="absolute top-0 right-0
                          w-8 h-8 flex items-center justify-center rounded-xl
                          bg-navi-surface2 border border-navi-border
-                         text-[13px] text-navi-muted hover:text-navi-text
+                         text-[13px] text-navi-secondary hover:text-navi-text
                          transition-colors"
             >
-              
+              x
             </button>
 
             {/* 완료 헤더 */}
@@ -50,7 +50,15 @@ export function TutorialComplete() {
               <div className="inline-flex items-center justify-center
                               w-11 h-11 rounded-2xl mb-4
                               bg-navi-success/[0.10] border border-navi-success/25">
-                <span className="text-[16px] font-black text-navi-text"></span>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path
+                    d="M4.5 10.5L8 14L15.5 6.5"
+                    stroke="rgb(var(--navi-success))"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </div>
               <h2 className="text-[22px] font-black text-navi-text leading-tight mb-2">
                 기초 과정 완료
