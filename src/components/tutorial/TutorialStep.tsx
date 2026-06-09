@@ -129,18 +129,15 @@ function smartScroll(step: TStep, isMobile: boolean) {
 
 /* ══ Comprehensive test helpers ═════════════════════════════ */
 function scoreTrend(c: CandleData[]): 'up' | 'sideways' | 'down' {
-  if (c.length < 30) return 'sideways'
-  const ma20 = calcMA(c, 20)
-  const n20 = ma20.length
-  if (n20 < 2) return 'sideways'
-  // MA20만 사용 — MA60은 90봉 슬라이스에서 31개 값만 생성되며
-  // V자 구간에서 first/last 비교가 왜곡되어 MA20 단독 판단이 더 정확
-  // 가시 구간 첫값 vs 마지막값: 차트 왼쪽 끝과 오른쪽 끝을 눈으로 비교하는 것과 동일
-  const first = ma20[0].value
-  const last  = ma20[n20 - 1].value
+  if (c.length < 2) return 'sideways'
+  // 가시 구간 첫 봉(왼쪽 끝) vs 마지막 봉(오른쪽 끝) 종가 단순 비교
+  // MA 계산 없이 차트에서 눈으로 보이는 것과 정확히 일치
+  // — MA20 평균 방식은 끝 20봉에 스파이크가 포함될 때 왜곡 발생
+  const first = c[0].close
+  const last  = c[c.length - 1].close
   const pct   = (last - first) / first
-  if (pct >  0.005) return 'up'    // 0.5% 이상 상승
-  if (pct < -0.005) return 'down'  // 0.5% 이상 하락
+  if (pct >  0.02) return 'up'    // 2% 이상 상승
+  if (pct < -0.02) return 'down'  // 2% 이상 하락
   return 'sideways'
 }
 function scoreRSI(c: CandleData[]): 'overbought'|'neutral'|'oversold' {
