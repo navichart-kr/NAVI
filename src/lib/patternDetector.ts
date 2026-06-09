@@ -175,6 +175,7 @@ export function findBestCandlePattern(
   const maxIdx = data.length - NEED_FUTURE
 
   for (let i = MIN_IDX; i < maxIdx; i++) {
+    if (data[i].time < '2000-01-01') continue   // 2000년대 이후 데이터만 활용
     const c = data[i]
     const p = data[i - 1]
 
@@ -276,6 +277,27 @@ function calcAvgVolume(data: CandleData[]): number {
   return vols.reduce((s, v) => s + v, 0) / vols.length
 }
 
+/**
+ * 해당 봉 기준 ±halfWin 범위의 로컬 평균 거래량 (후보 봉 자신은 제외)
+ * 전체 평균 대신 로컬 평균을 쓰면 "화면에 보이는 막대들 중 얼마나 튀는지"를
+ * 정확하게 포착할 수 있어 시각적으로 극적인 구간이 선택된다.
+ */
+function calcLocalAvgVolume(
+  data: CandleData[],
+  centerIdx: number,
+  halfWin = 20,
+): number {
+  const lo = Math.max(0, centerIdx - halfWin)
+  const hi = Math.min(data.length - 1, centerIdx + halfWin)
+  let sum = 0, cnt = 0
+  for (let i = lo; i <= hi; i++) {
+    if (i === centerIdx) continue
+    const v = data[i].volume
+    if (v != null) { sum += v; cnt++ }
+  }
+  return cnt > 0 ? sum / cnt : 0
+}
+
 export function findVolumePattern(
   data: CandleData[],
   type: VolumeTopicType,
@@ -302,14 +324,17 @@ export function findVolumePattern(
     }
 
     case 'up-surge': {
-      // 조건 1순위: 거래량 평균 2배 이상 + 명확한 양봉(1.5%+) + 이후 상승
+      // 조건 1순위: 로컬 평균 2.5배 이상 + 명확한 양봉(1.5%+)
+      // 로컬 평균 = ±20봉 이웃 평균 → 화면에서 실제로 튀어 보이는 봉 선택
       let best1 = { idx: MIN_IDX, score: -Infinity }
       for (let i = MIN_IDX; i < maxIdx; i++) {
-        const c   = data[i]
-        const vol = c.volume ?? 0
-        const pct = (c.close - c.open) / c.open
-        if (pct > 0.015 && vol > avg * 2.0) {
-          const s = pct * (vol / avg)
+        const c        = data[i]
+        const vol      = c.volume ?? 0
+        const pct      = (c.close - c.open) / c.open
+        const localAvg = calcLocalAvgVolume(data, i)
+        if (!localAvg) continue
+        if (pct > 0.015 && vol > localAvg * 2.5) {
+          const s = (vol / localAvg) * pct
           if (s > best1.score) { best1 = { idx: i, score: s } }
         }
       }
@@ -321,14 +346,16 @@ export function findVolumePattern(
           outcome:     getOutcome(data, best1.idx),
         }
       }
-      // fallback: 평균 이상 + 양봉 중 최고 점수
+      // fallback: 로컬 평균 1.8배 이상 + 양봉
       let best2 = { idx: MIN_IDX, score: -Infinity }
       for (let i = MIN_IDX; i < maxIdx; i++) {
-        const c   = data[i]
-        const vol = c.volume ?? 0
-        const pct = (c.close - c.open) / c.open
-        if (pct > 0 && vol > avg * 1.2) {
-          const s = pct * (vol / avg)
+        const c        = data[i]
+        const vol      = c.volume ?? 0
+        const pct      = (c.close - c.open) / c.open
+        const localAvg = calcLocalAvgVolume(data, i)
+        if (!localAvg) continue
+        if (pct > 0 && vol > localAvg * 1.8) {
+          const s = (vol / localAvg) * pct
           if (s > best2.score) { best2 = { idx: i, score: s } }
         }
       }
@@ -341,14 +368,16 @@ export function findVolumePattern(
     }
 
     case 'down-surge': {
-      // 조건 1순위: 거래량 평균 2배 이상 + 명확한 음봉(-1.5%+) + 이후 하락
+      // 조건 1순위: 로컬 평균 2.5배 이상 + 명확한 음봉(-1.5%+)
       let best1 = { idx: MIN_IDX, score: -Infinity }
       for (let i = MIN_IDX; i < maxIdx; i++) {
-        const c   = data[i]
-        const vol = c.volume ?? 0
-        const pct = (c.close - c.open) / c.open
-        if (pct < -0.015 && vol > avg * 2.0) {
-          const s = Math.abs(pct) * (vol / avg)
+        const c        = data[i]
+        const vol      = c.volume ?? 0
+        const pct      = (c.close - c.open) / c.open
+        const localAvg = calcLocalAvgVolume(data, i)
+        if (!localAvg) continue
+        if (pct < -0.015 && vol > localAvg * 2.5) {
+          const s = Math.abs(pct) * (vol / localAvg)
           if (s > best1.score) { best1 = { idx: i, score: s } }
         }
       }
@@ -360,14 +389,16 @@ export function findVolumePattern(
           outcome:     getOutcome(data, best1.idx),
         }
       }
-      // fallback
+      // fallback: 로컬 평균 1.8배 이상 + 음봉
       let best2 = { idx: MIN_IDX, score: -Infinity }
       for (let i = MIN_IDX; i < maxIdx; i++) {
-        const c   = data[i]
-        const vol = c.volume ?? 0
-        const pct = (c.close - c.open) / c.open
-        if (pct < 0 && vol > avg * 1.2) {
-          const s = Math.abs(pct) * (vol / avg)
+        const c        = data[i]
+        const vol      = c.volume ?? 0
+        const pct      = (c.close - c.open) / c.open
+        const localAvg = calcLocalAvgVolume(data, i)
+        if (!localAvg) continue
+        if (pct < 0 && vol > localAvg * 1.8) {
+          const s = Math.abs(pct) * (vol / localAvg)
           if (s > best2.score) { best2 = { idx: i, score: s } }
         }
       }
@@ -401,14 +432,16 @@ export function findVolumePattern(
     }
 
     case 'quiz': {
-      // 전체 구간에서 거래량이 가장 많고 방향이 명확한 날 (up-surge와 동일 로직, 다른 구간)
+      // 로컬 평균 2.0배 이상 + 방향이 명확한 날 (퀴즈용 — up-surge와 별개 구간)
       let bestIdx = MIN_IDX, bestScore = -Infinity
       for (let i = MIN_IDX; i < maxIdx; i++) {
-        const c   = data[i]
-        const vol = c.volume ?? 0
-        const pct = Math.abs((c.close - c.open) / c.open)
-        if (vol > avg * 1.5 && pct > 0.01) {
-          const s = pct * (vol / avg)
+        const c        = data[i]
+        const vol      = c.volume ?? 0
+        const pct      = Math.abs((c.close - c.open) / c.open)
+        const localAvg = calcLocalAvgVolume(data, i)
+        if (!localAvg) continue
+        if (vol > localAvg * 2.0 && pct > 0.01) {
+          const s = pct * (vol / localAvg)
           if (s > bestScore) { bestScore = s; bestIdx = i }
         }
       }
