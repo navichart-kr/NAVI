@@ -651,7 +651,7 @@ export function TutorialStep() {
   const pcNavRow = (
     <div className="flex items-center justify-between px-4 py-3 border-t border-navi-border/40">
       <button onClick={skip}
-        className="text-[10px] text-quiet-35 hover:text-navi-secondary transition-colors">
+        className="text-[10px] text-navi-secondary hover:text-navi-text transition-colors">
         건너뛰기
       </button>
       <div className="flex gap-1.5 items-center">
@@ -690,7 +690,7 @@ export function TutorialStep() {
   const mobileNavRow = (
     <div className="flex items-center justify-between px-4 py-2.5 border-t border-navi-border/40">
       <button onClick={skip}
-        className="text-[11px] text-quiet-35 hover:text-navi-secondary transition-colors py-1 px-0.5">
+        className="text-[11px] text-navi-secondary hover:text-navi-text transition-colors py-1 px-0.5">
         건너뛰기
       </button>
       <div className="flex gap-2 items-center">

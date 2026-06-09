@@ -252,7 +252,7 @@ export function ChallengeGuide({ forceGuide = false }: Props) {
 
             {/* 네비 */}
             <div className="flex items-center justify-between px-4 py-3 border-t border-navi-border/40">
-              <button onClick={dismiss} className="text-[10px] text-quiet-35 hover:text-navi-secondary transition-colors">
+              <button onClick={dismiss} className="text-[10px] text-navi-secondary hover:text-navi-text transition-colors">
                 건너뛰기
               </button>
               <div className="flex gap-1.5 items-center">
