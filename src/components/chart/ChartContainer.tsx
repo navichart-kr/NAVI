@@ -343,15 +343,33 @@ export function ChartContainer() {
     }
   }, [candleData, activeIndicators])
 
-  // ── 튜토리얼 차트 포커스 — 마지막 N봉이 보이도록 줌 ────────
+  // ── 튜토리얼 차트 포커스 — 날짜 범위 또는 마지막 N봉 줌 ──────
   useEffect(() => {
-    if (!focusBarsFromEnd || !chartRef.current || candleData.length === 0) return
+    if (!chartRef.current || candleData.length === 0) return
     const n = candleData.length
+
+    // focusDateRange 우선 — 특정 날짜 구간으로 줌 (피보나치 레슨 등)
+    const dateRange = currentStep?.focusDateRange
+    if (dateRange) {
+      const fromIdx = candleData.findIndex(d => d.time >= dateRange.from)
+      const toIdx   = candleData.findIndex(d => d.time >= dateRange.to)
+      if (fromIdx >= 0) {
+        chartRef.current.timeScale().setVisibleLogicalRange({
+          from: Math.max(0, fromIdx - 3),
+          to:   toIdx >= 0 ? toIdx + 3 : n + 3,
+        })
+        return
+      }
+    }
+
+    // fallback — 마지막 N봉이 보이도록 줌
+    if (!focusBarsFromEnd) return
     chartRef.current.timeScale().setVisibleLogicalRange({
       from: Math.max(0, n - focusBarsFromEnd - 1),
       to:   n + 3,
     })
-  }, [focusBarsFromEnd, candleData.length])
+  }, [focusBarsFromEnd, candleData.length,
+      currentStep?.focusDateRange?.from, currentStep?.focusDateRange?.to])
 
   // ── 학습 하이라이트 — 줌 + HTML 캔들 박스 ──────────────────
   useEffect(() => {

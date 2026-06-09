@@ -53,6 +53,13 @@ export interface TutorialStep {
   /** 이 단계 진입 시 차트를 마지막 N봉이 보이도록 줌 */
   focusBarsFromEnd?: number
 
+  /**
+   * 이 단계 진입 시 특정 날짜 구간으로 차트를 줌
+   * focusBarsFromEnd 보다 우선 적용된다.
+   * 피보나치 레슨처럼 과거 특정 구간을 보여줘야 할 때 사용.
+   */
+  focusDateRange?: { from: string; to: string }
+
   /** 이 단계 진입 시 기존 작도 (추세선·피보나치) 를 모두 지운다 */
   clearDrawingsOnEnter?: boolean
 

@@ -29,7 +29,6 @@ interface FibSwing {
   bounceDate:  string
   bouncePrice: number
   fibKey:      FibKey
-  focusBars:   number   // n - loIdx + margin (데이터 끝~저점 앞까지 모두 표시)
 }
 
 /* ── 날짜 탐색 헬퍼 ────────────────────────────────────── */
@@ -111,7 +110,6 @@ function findFibSwing(data: CandleData[]): FibSwing | null {
       lowDate, lowPrice, highDate, highPrice,
       bounceDate, bouncePrice,
       fibKey,
-      focusBars: Math.min(N - loIdx + 55, N),
     }
   }
 
@@ -119,7 +117,6 @@ function findFibSwing(data: CandleData[]): FibSwing | null {
     lowDate, lowPrice, highDate, highPrice,
     bounceDate, bouncePrice,
     fibKey: '382',
-    focusBars: Math.min(N - loIdx + 55, N),
   }
 }
 
@@ -144,7 +141,7 @@ export function buildFibonacciSteps(data: CandleData[]): TutorialStep[] {
 /* ── 스윙 -> 단계 빌더 ─────────────────────────────────── */
 function buildStepsFromSwing(swing: FibSwing): TutorialStep[] {
   const { lowDate, lowPrice, highDate, highPrice,
-          bounceDate, bouncePrice, fibKey, focusBars } = swing
+          bounceDate, bouncePrice, fibKey } = swing
 
   const range    = highPrice - lowPrice
   const rallyPct = Math.round(range / lowPrice * 100)
@@ -188,6 +185,10 @@ function buildStepsFromSwing(swing: FibSwing): TutorialStep[] {
     ? `38.2% 레벨(${f(fib382)}) 부근에서 반등한 뒤, MSFT는 이후 장기 상승으로 이어졌어요. 강한 추세에서 38.2%는 첫 번째 지지선 역할을 해요.`
     : `${correctFib.label} 레벨에서 반등한 뒤 MSFT는 상승세를 이어갔어요.`
 
+  // 피보나치 레슨 전용 날짜 줌 구간
+  // 저점(2023-01) ~ 반등 안정화(2023-06) 구간을 명확하게 보여준다
+  const focusDateRange = { from: '2022-10-01', to: '2023-07-01' }
+
   return [
 
     /* STEP 1  개념 소개 */
@@ -198,7 +199,7 @@ function buildStepsFromSwing(swing: FibSwing): TutorialStep[] {
       position:               'left',
       clearIndicatorsOnEnter: ['rsi', 'macd', 'bollinger', 'moving-average'],
       clearDrawingsOnEnter:   true,
-      focusBarsFromEnd:       focusBars,
+      focusDateRange,
       title:                  '피보나치 심화 — 실제 반등 구간을 확인해봐요',
       body:                   `피보나치 되돌림이 실제 시장에서 얼마나 정확한지 MSFT 2023년 실제 사례로 직접 확인해봐요.\n\n${lowDate.slice(0, 7)} 저점에서 ${highDate.slice(0, 7)} 고점까지 +${rallyPct}% 강하게 상승한 뒤, 어느 피보나치 레벨에서 지지를 받고 다시 상승했는지 눈으로 확인할 수 있어요.\n\n주요 레벨:\n• 38.2% — 강한 추세의 첫 번째 지지선\n• 50% — 심리적 중간 지점\n• 61.8% — 황금 비율, 깊은 조정 구간`,
       actionRequired:         'free',
@@ -209,7 +210,7 @@ function buildStepsFromSwing(swing: FibSwing): TutorialStep[] {
       id:               'fib-adv-observe',
       targetSelector:   '#chart-area',
       position:         'right',
-      focusBarsFromEnd: focusBars,
+      focusDateRange,
       title:            '저점에서 고점까지 상승을 확인해봐요',
       body:             `MSFT는 ${lowDate} 저점 ${fl(lowPrice)}에서 ${highDate} 고점 ${fl(highPrice)}까지 약 +${rallyPct}% 강하게 상승했어요.\n\n차트 왼쪽에 저점(초록 마커)과 고점(주황 마커)이 표시돼 있어요.\n\n고점 이후 가격이 어디서 멈추고 다시 반등했는지 확인해봐요:\n• 되돌림 저점은 ${bounceDate} ${fl(bouncePrice)} 부근이에요\n• 고점 대비 약 ${retPct}% 되돌렸어요\n• 이 지점이 어느 피보나치 레벨에 해당하는지 다음 단계에서 확인해요`,
       actionRequired:   'free',
@@ -220,7 +221,7 @@ function buildStepsFromSwing(swing: FibSwing): TutorialStep[] {
       id:                         'fib-adv-draw',
       targetSelector:             '#chart-area',
       position:                   'bottom',
-      focusBarsFromEnd:           focusBars,
+      focusDateRange,
       clearDrawingsOnEnter:       true,
       activateDrawingToolOnEnter: 'fibonacci',
       fibGuide: {
@@ -245,7 +246,7 @@ function buildStepsFromSwing(swing: FibSwing): TutorialStep[] {
       id:               'fib-adv-explain',
       targetSelector:   '#chart-area',
       position:         'bottom',
-      focusBarsFromEnd: focusBars,
+      focusDateRange,
       title:            '각 레벨과 실제 가격 반응을 확인해봐요',
       body:             `저점 ${fl(lowPrice)} ~ 고점 ${fl(highPrice)} 구간에 피보나치를 적용하면:\n\n• 23.6%  ${f(fib236)} — 가격이 짧게 머문 구간\n• 38.2%  ${f(fib382)} — 강한 조정 후 지지 구간\n• 50.0%  ${f(fib50)} — 심리적 중간 지점\n• 61.8%  ${f(fib618)} — 황금 비율, 깊은 조정 구간\n\n실제로 ${bounceDate}에 가격이 ${fl(bouncePrice)} 부근에서 멈추고 다시 상승했어요.\n이 가격이 어느 레벨에 해당하는지 차트에서 확인해봐요.`,
       tips: [
@@ -261,7 +262,7 @@ function buildStepsFromSwing(swing: FibSwing): TutorialStep[] {
       id:               'fib-adv-levels',
       targetSelector:   '#chart-area',
       position:         'bottom',
-      focusBarsFromEnd: focusBars,
+      focusDateRange,
       title:            '이 차트에서 가격은 어느 레벨에서 반등했을까요?',
       body:             `고점 ${fl(highPrice)} 이후 조정을 받은 가격이 다시 반등한 피보나치 레벨은 어디일까요?\n\n힌트: 반등이 시작된 저점은 ${fl(bouncePrice)} 부근이에요.`,
       actionRequired:   'judgment',
@@ -296,7 +297,8 @@ function buildStepsFromSwing(swing: FibSwing): TutorialStep[] {
           },
         ],
       },
-      completionMessage: correctFeedbacks[fibKey],
+      // completionMessage 는 choice feedback 과 다른 내용으로 설정 (중복 방지)
+      completionMessage: afterBounceDesc,
     },
 
     /* STEP 6  완료 */
@@ -304,7 +306,7 @@ function buildStepsFromSwing(swing: FibSwing): TutorialStep[] {
       id:               'fib-adv-complete',
       targetSelector:   '#chart-area',
       position:         'bottom',
-      focusBarsFromEnd: focusBars,
+      focusDateRange,
       title:            '피보나치 심화 완료',
       body:             `${afterBounceDesc}\n\n핵심 정리:\n• 강한 추세 → 38.2%에서 첫 번째 반등\n• 중간 추세 → 50%에서 지지\n• 약한 추세 → 61.8%까지 하락 후 반등\n• 61.8% 이상 하락 → 추세 전환 경고\n\n실전 챌린지에서 피보나치를 활용해봐요!`,
       tips: [
