@@ -700,62 +700,6 @@ export function LandingPage() {
         </div>
       </div>
 
-      {/* ══ Final CTA — visible after scroll zone ends ══════════ */}
-      <section style={{
-        padding: 'clamp(140px, 18vh, 200px) 24px',
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', textAlign: 'center',
-        position: 'relative', overflow: 'hidden',
-      }}>
-        <div style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: 'radial-gradient(ellipse 65% 60% at 50% 50%, rgba(45,65,152,0.18) 0%, transparent 65%)',
-        }} />
-        <NaviButterfly
-          size={230} opacity={0.05} color="#2D4198" rotate={8}
-          style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%) rotate(8deg)' }}
-        />
-
-        <div style={{
-          position: 'relative', zIndex: 1,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32,
-        }}>
-          <motion.div {...fadeUp(0)}>
-            <img
-              src="/navi-logo-typo.svg" alt="NAVIchart" draggable={false}
-              style={{ height: 28, width: 'auto', opacity: 0.62 }}
-            />
-          </motion.div>
-
-          <motion.h2
-            {...fadeUp(0.08)}
-            style={{
-              fontSize: 'clamp(36px, 4.8vw, 60px)',
-              fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.1, color: TEXT,
-            }}
-          >
-            이제는 감이 아니라,<br />분석입니다.
-          </motion.h2>
-
-          <motion.div {...fadeUp(0.18)}>
-            <Link
-              href="/chart"
-              onClick={() => trackEvent('landing_cta_clicked', { destination: 'chart', position: 'final' })}
-              style={{
-                display: 'inline-flex', alignItems: 'center',
-                height: 54, padding: '0 40px',
-                background: BLUE, color: '#fff',
-                fontSize: 15, fontWeight: 700,
-                borderRadius: 14, border: `1px solid ${BLUE}`,
-                boxShadow: '0 4px 32px rgba(91,127,255,0.40)',
-                textDecoration: 'none', whiteSpace: 'nowrap' as const,
-              }}
-            >
-              NAVIchart 시작하기
-            </Link>
-          </motion.div>
-        </div>
-      </section>
 
     </main>
   )
