@@ -31,12 +31,21 @@ function buildFixedTrendline(data: CandleData[]): TLResult | null {
   if (i1 < 0 || i2 < 0 || i2 <= i1) return null
 
   const slope = (p2.low - p1.low) / (i2 - i1)
+
+  const supportWindows = [
+    ['2023-03-01', '2023-03-31'],
+    ['2023-09-01', '2023-09-30'],
+    ['2024-04-15', '2024-05-10'],
+  ]
   const touches: number[] = []
-  for (let k = i1; k <= i2; k++) {
-    const tlV  = p1.low + slope * (k - i1)
-    const diff = (seg[k].low - tlV) / tlV
-    if (diff >= -0.015 && diff < 0.025) touches.push(k)
+  for (const [from, to] of supportWindows) {
+    const win = seg.filter(d => d.time >= from && d.time <= to)
+    if (!win.length) continue
+    const low = win.reduce((m, d) => d.low < m.low ? d : m, win[0])
+    const idx = seg.findIndex(d => d.time === low.time)
+    if (idx >= 0) touches.push(idx)
   }
+
   return { segment: seg, startIdx: i1, slope, baseValue: p1.low, touches }
 }
 
@@ -203,14 +212,8 @@ export function MiniChartPreview({ slug }: Props) {
           { time: seg[last].time     as Time, value: baseValue + slope * (last - startIdx) },
         ] as any)
 
-        // 터치봉 마커 (연속된 터치는 묶어서 대표 1개만 표시 → 깔끔)
-        const deduped: number[] = []
-        let lastT = -10
-        for (const t of [...touches].sort((a, b) => a - b)) {
-          if (t - lastT >= 4) { deduped.push(t); lastT = t }
-        }
         candleSeries.setMarkers(
-          deduped.slice(0, 5).map(b => ({
+          touches.map(b => ({
             time: seg[b].time, position: 'belowBar',
             color: '#818cf8', shape: 'circle', size: 1,
             text: '지지',
