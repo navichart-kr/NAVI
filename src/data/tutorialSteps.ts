@@ -347,17 +347,4 @@ export const tutorialSteps: TutorialStep[] = [
     actionRequired: 'free',
   },
 
-  // ══════════════════════════════════════════════════════════
-  // STEP 16  첫 챌린지 시작 CTA
-  // ══════════════════════════════════════════════════════════
-  {
-    id:                   'simulate-cta',
-    targetSelector:       null,
-    mobileTargetSelector: null,
-    position:             'bottom',
-    overlayPosition:      'center',
-    title:          '기초 과정 거의 완료예요',
-    body:           '아래 "기초 과정 완료" 버튼을 누르면 다음 행동을 선택할 수 있어요.\n\n실전 챌린지, 추가 학습, 또는 자유 차트 분석 — 원하는 것을 선택해봐요.',
-    actionRequired: 'free',
-  },
 ]
