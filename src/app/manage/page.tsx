@@ -322,7 +322,7 @@ export default async function ManagePage() {
     },
     {
       label:       '튜토리얼 완료',
-      desc:        '16단계 기초 과정 완료',
+      desc:        '15단계 기초 과정 완료',
       event:       'tutorial_completed',
       count:       tutDone30,
       convTooltip: `tutorial_completed / tutorial_started × 100\n= ${tutDone30} / ${tutStart30} × 100`,
@@ -558,11 +558,11 @@ export default async function ManagePage() {
       </SectionCard>
 
       {/* ══════════════════════════════════════
-          4. 기초 튜토리얼 16단계 분석
+          4. 기초 튜토리얼 15단계 분석
       ══════════════════════════════════════ */}
       <SectionCard
         id="steps"
-        title="기초 튜토리얼 16단계 분석"
+        title="기초 튜토리얼 15단계 분석"
         sub="tutorial_step_viewed · 최근 30일 · 빨간 강조 = 이전 단계 대비 30% 이상 이탈"
       >
         {steps

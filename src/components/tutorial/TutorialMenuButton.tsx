@@ -66,7 +66,7 @@ export function TutorialMenuButton({ size = 'sm' }: TutorialMenuButtonProps) {
           기초 과정
         </p>
         <p className={`font-medium text-navi-secondary mb-2.5 ${isMobileView ? 'text-[13px]' : 'text-[12px]'}`}>
-          16단계 차트 읽기 입문
+          15단계 차트 읽기 입문
         </p>
         <button
           onClick={() => { start(); setOpen(false) }}

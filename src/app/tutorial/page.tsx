@@ -58,7 +58,7 @@ export default function TutorialPage() {
         <div className="flex items-center gap-3 text-[13px] text-navi-secondary">
           <span>약 7~10분</span>
           <span className="w-1 h-1 rounded-full bg-navi-border2 shrink-0" />
-          <span>16단계 실습</span>
+          <span>15단계 실습</span>
           <span className="w-1 h-1 rounded-full bg-navi-border2 shrink-0" />
           <span>틀려도 괜찮아요</span>
         </div>
