@@ -200,7 +200,7 @@ export function LandingPage() {
   const ctaY          = useTransform(zoomProg, [0.65, 1.0], [28, 0])
 
   return (
-    <main style={{ background: BG, color: TEXT, overflowX: 'hidden' }}>
+    <main style={{ background: BG, color: TEXT }}>
 
       {/* ══ Section 1 — Hero ════════════════════════════════════ */}
       <section style={{
@@ -458,12 +458,15 @@ export function LandingPage() {
 
       {/* ══ Section 3 — Observe · Learn · Think ═════════════════ */}
       <section style={{
-        padding: 'clamp(120px, 15vh, 180px) clamp(16px, 4vw, 48px)',
-        maxWidth: 1100, margin: '0 auto',
+        padding: 'clamp(120px, 15vh, 180px) clamp(16px, 4vw, 64px)',
+        maxWidth: 1300, margin: '0 auto',
       }}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+        <div
+          className="grid grid-cols-1 lg:grid-cols-[320px_1fr] items-center"
+          style={{ gap: 'clamp(40px, 6vw, 80px)' }}
+        >
           {/* Left: keywords */}
-          <div>
+          <div className="order-2 lg:order-1" style={{ minWidth: 0 }}>
             <motion.div {...fadeUp(0)}>
               <SectionLabel>Learning Experience</SectionLabel>
             </motion.div>
@@ -491,8 +494,8 @@ export function LandingPage() {
             </motion.p>
           </div>
 
-          {/* Right: tutorial mockup */}
-          <motion.div {...fadeUp(0.12)} className="lg:order-last">
+          {/* Right: tutorial mockup — wider column */}
+          <motion.div {...fadeUp(0.12)} className="order-1 lg:order-2">
             <MockupFrame
               src="/landing/shot-tutorial.png"
               alt="NAVIchart 인터랙티브 학습 — 차트 하이라이트 + 학습 카드"
@@ -506,12 +509,15 @@ export function LandingPage() {
 
       {/* ══ Section 4 — Challenge Preview ══════════════════════ */}
       <section style={{
-        padding: 'clamp(120px, 15vh, 180px) clamp(16px, 4vw, 48px)',
-        maxWidth: 1100, margin: '0 auto',
+        padding: 'clamp(120px, 15vh, 180px) clamp(16px, 4vw, 64px)',
+        maxWidth: 1300, margin: '0 auto',
       }}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-          {/* Left: simulate mockup */}
-          <motion.div {...fadeUp(0)} className="lg:order-first">
+        <div
+          className="grid grid-cols-1 lg:grid-cols-[1fr_320px] items-center"
+          style={{ gap: 'clamp(40px, 6vw, 80px)' }}
+        >
+          {/* Left: simulate mockup — wider column */}
+          <motion.div {...fadeUp(0)} className="order-1">
             <MockupFrame
               src="/landing/shot-simulate.png"
               alt="NAVIchart 실전 챌린지 — 주가 예측 시뮬레이션"
@@ -520,7 +526,7 @@ export function LandingPage() {
           </motion.div>
 
           {/* Right: text + prediction buttons */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+          <div className="order-2" style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
             <motion.div {...fadeUp(0.08)}>
               <SectionLabel>실전 챌린지</SectionLabel>
               <h2 style={{
