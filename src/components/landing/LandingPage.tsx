@@ -149,7 +149,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 // ── NaviButterfly ──────────────────────────────────────────────
 function NaviButterfly({
-  size = 120, opacity = 0.07, color = '#2D4198', rotate = 0, flipX = false,
+  size = 120, opacity = 0.07, color = '#3046DD', rotate = 0, flipX = false,
   style = {},
 }: {
   size?: number; opacity?: number; color?: string
@@ -219,7 +219,7 @@ export function LandingPage() {
         }} />
 
         {/* Butterflies */}
-        <NaviButterfly size={300} opacity={0.048} color="#2D4198" rotate={14}
+        <NaviButterfly size={300} opacity={0.048} color="#3046DD" rotate={14}
           style={{ position: 'absolute', top: '4%', right: '-2%' }} />
         <NaviButterfly size={160} opacity={0.038} color="#5B7FFF" rotate={-12} flipX
           style={{ position: 'absolute', bottom: '28%', left: '-1%' }} />

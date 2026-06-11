@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg id="_레이어_1" data-name=" 레이어 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480">
+<svg id="_레이어_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 480 480">
+  <!-- Generator: Adobe Illustrator 30.4.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 226)  -->
   <defs>
     <style>
-      .cls-1 {
-        fill: #f5f7fb;
+      .st0 {
+        fill: #3046dd;
       }
 
-      .cls-2 {
-        fill: #2d4198;
+      .st1 {
+        fill: #f5f7fb;
       }
     </style>
   </defs>
-  <rect class="cls-2" x="0" width="480" height="480" rx="100" ry="100"/>
+  <rect class="st0" width="480" height="480" rx="100" ry="100"/>
   <g>
-    <polygon class="cls-1" points="64.16 86.53 110.02 254.96 173.14 297.31 148.69 304.95 100.56 375.34 191.69 341.28 215.76 311.41 226.66 222.7 209.8 179.38 64.16 86.53"/>
-    <polygon class="cls-1" points="241.02 248.74 235.7 313.74 367.16 269.1 450.23 123.6 298.84 171.55 241.02 248.74"/>
-    <polygon class="cls-1" points="282.84 303.45 242.2 323.75 250.68 355.84 305.09 389.58 323.5 367.89 324.21 316.96 282.84 303.45"/>
+    <polygon class="st1" points="64.16 86.53 110.02 254.96 173.14 297.31 148.69 304.95 100.56 375.34 191.69 341.28 215.76 311.41 226.66 222.7 209.8 179.38 64.16 86.53"/>
+    <polygon class="st1" points="241.02 248.74 235.7 313.74 367.16 269.1 450.23 123.6 298.84 171.55 241.02 248.74"/>
+    <polygon class="st1" points="282.84 303.45 242.2 323.75 250.68 355.84 305.09 389.58 323.5 367.89 324.21 316.96 282.84 303.45"/>
   </g>
 </svg>

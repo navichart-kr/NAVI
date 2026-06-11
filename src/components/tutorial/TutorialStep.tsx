@@ -1172,7 +1172,7 @@ export function TutorialStep() {
             style={{
               position: 'fixed', top: hl.top, left: hl.left, width: hl.width, height: hl.height,
               zIndex: 45, pointerEvents: 'none', borderRadius: 10,
-              boxShadow: '0 0 0 1.5px #2D4198,0 0 0 5px rgba(45,65,152,0.25),0 0 28px rgba(45,65,152,0.45)',
+              boxShadow: '0 0 0 1.5px #3046DD,0 0 0 5px rgba(48,70,221,0.25),0 0 28px rgba(48,70,221,0.45)',
             }}
           />
         )}

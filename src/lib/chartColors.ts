@@ -11,7 +11,7 @@ export function getChartColors(isDark: boolean) {
     border: isDark ? '#1B2847' : '#E5EAF5',
 
     /* 캔들 */
-    candleUp:   isDark ? '#26a69a' : '#2D4198',
+    candleUp:   isDark ? '#26a69a' : '#3046DD',
     candleDown: isDark ? '#ef5350' : '#E06363',
 
     /* 이동평균선 */

@@ -23,7 +23,7 @@
   --navi-border2:   38 53 88;    /* #263558 */
 
   /* 브랜드 */
-  --navi-accent:        45 65 152;   /* #2D4198 */
+  --navi-accent:        48 70 221;   /* #3046DD */
   --navi-accent-hover:  61 84 191;   /* #3D54BF */
 
   /* 행동 */
@@ -68,16 +68,16 @@ html.light {
   --navi-border2:   200 211 236;  /* #C8D3EC */
 
   /* 브랜드 */
-  --navi-accent:        45 65 152;   /* #2D4198 (유지) */
+  --navi-accent:        48 70 221;   /* #3046DD (유지) */
   --navi-accent-hover:  29 48 128;   /* #1D3080 */
 
   /* 행동 — Light에서는 Accent와 동일 */
-  --navi-action:        45 65 152;   /* #2D4198 */
+  --navi-action:        48 70 221;   /* #3046DD */
   --navi-action-hover:  29 48 128;   /* #1D3080 */
 
   /* 시맨틱 */
   --navi-success:   15 157 117;   /* #0F9D75 */
-  --navi-info:      45 65 152;    /* #2D4198 */
+  --navi-info:      48 70 221;    /* #3046DD */
   --navi-warning:   245 158 11;   /* #F59E0B */
   --navi-danger:    220 79 97;    /* #DC4F61 */
 
@@ -88,7 +88,7 @@ html.light {
   --navi-disabled:  rgba(14, 23, 45, 0.30);
 
   /* 캔들 — NAVI 브랜드 블루 / 레드 */
-  --navi-bullish: 45 65 152;    /* #2D4198 brand blue */
+  --navi-bullish: 48 70 221;    /* #3046DD brand blue */
   --navi-bearish: 224 99 99;    /* #E06363 */
 
   /* 차트 전용 */
@@ -96,7 +96,7 @@ html.light {
   --chart-grid:  #E5EAF5;
   --chart-text:  #5E6B85;
   --chart-border: #E5EAF5;
-  --candle-up:   #2D4198;
+  --candle-up:   #3046DD;
   --candle-down: #E06363;
 }
 
